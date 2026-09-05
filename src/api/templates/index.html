@@ -1,0 +1,310 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }}</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --card-bg: #f9fafb;
+            --accent: #2563eb;
+            --danger: #dc2626;
+            --danger-bg: #fef2f2;
+            --warning: #d97706;
+            --warning-bg: #fffbeb;
+            --success: #16a34a;
+            --success-bg: #f0fdf4;
+            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f172a;
+                --text: #f8fafc;
+                --text-muted: #94a3b8;
+                --border: #334155;
+                --card-bg: #1e293b;
+                --accent: #3b82f6;
+                --danger: #ef4444;
+                --danger-bg: #450a0a;
+                --warning: #f59e0b;
+                --warning-bg: #451a03;
+                --success: #22c55e;
+                --success-bg: #052e16;
+            }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.5; padding: 24px; max-width: 1100px; margin: 0 auto; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        h1 { font-size: 20px; font-weight: 600; }
+        .meta-text { font-size: 13px; color: var(--text-muted); }
+        
+        .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+        button { font-family: var(--font); font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); cursor: pointer; transition: opacity 0.15s; }
+        button:hover { opacity: 0.85; }
+        button.primary { background: var(--accent); color: #ffffff; border-color: var(--accent); }
+        button.danger { background: var(--danger); color: #ffffff; border-color: var(--danger); }
+        button.warning { background: var(--warning); color: #ffffff; border-color: var(--warning); }
+        
+        .incident-list { display: flex; flex-direction: column; gap: 16px; }
+        .incident-card { border: 1px solid var(--border); background: var(--card-bg); border-radius: 8px; padding: 18px; }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+        .badge { font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); }
+        .badge.p1 { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); }
+        .badge.p2 { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning); }
+        .badge.resolved { background: var(--success-bg); color: var(--success); border: 1px solid var(--success); }
+        .badge.review { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning); }
+        
+        .service-title { font-weight: 600; font-size: 14px; }
+        .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+        
+        .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+        .rca-box { background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 6px; font-size: 13px; margin-bottom: 12px; }
+        
+        .meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+        .meta-item { background: var(--bg); border: 1px solid var(--border); padding: 8px; border-radius: 6px; font-size: 12px; }
+        .mono { font-family: var(--font-mono); }
+        
+        .status-box { padding: 12px; border-radius: 6px; font-size: 12px; margin-bottom: 12px; border: 1px solid var(--border); }
+        .status-box.passed { background: var(--success-bg); color: var(--success); border-color: var(--success); }
+        .status-box.blocked { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+        
+        .empty-state { text-align: center; padding: 48px; border: 1px dashed var(--border); border-radius: 8px; color: var(--text-muted); font-size: 14px; }
+
+        /* Modal */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+        .modal { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; width: 100%; max-width: 520px; padding: 20px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); }
+        .form-group input, .form-group textarea { width: 100%; padding: 8px 10px; font-size: 13px; font-family: inherit; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); color: var(--text); }
+        .form-group textarea { font-family: var(--font-mono); resize: vertical; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>{{ app_name }}</h1>
+            <p class="meta-text">SRE Incident Diagnostic & Rollback Controller</p>
+        </div>
+        <div class="meta-text">
+            Auto-Rollback: <strong>{{ 'Enabled' if auto_rollback_enabled else 'Disabled' }}</strong> | 
+            Confidence Threshold: <strong>{{ '%.0f' | format(guardrail_threshold * 100) }}%</strong>
+        </div>
+    </header>
+
+    <div class="controls">
+        <button class="danger" onclick="triggerSimulation('/api/v1/simulate/scenario-1')">Scenario 1: Fatal Crash</button>
+        <button class="warning" onclick="triggerSimulation('/api/v1/simulate/scenario-2')">Scenario 2: DB Migration</button>
+        <button class="primary" onclick="openPortfolioModal()">Test Portfolio Website</button>
+        <button onclick="window.location.reload()">Refresh</button>
+    </div>
+
+    <div class="incident-list">
+        {% if not incidents %}
+        <div class="empty-state">
+            No active incidents. Use the controls above to trigger a test simulation.
+        </div>
+        {% endif %}
+
+        {% for inc in incidents %}
+        <div class="incident-card">
+            <div class="card-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="badge {{ 'p1' if inc.severity == 'P1' else 'p2' }}">{{ inc.severity }}</span>
+                    <span class="mono meta-text">{{ inc.incident_id }}</span>
+                    <span class="service-title">{{ inc.service_name }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="meta-text">{{ inc.timestamp }}</span>
+                    <span class="badge {{ 'resolved' if inc.status == 'RESOLVED' else 'review' }}">{{ inc.status }}</span>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div>
+                    <div class="section-label">Root Cause Analysis</div>
+                    <div class="rca-box">
+                        {{ inc.rca.root_cause_summary }}
+                    </div>
+
+                    <div class="meta-grid">
+                        <div class="meta-item">
+                            <div class="section-label">Breaking Commit</div>
+                            <div class="mono" style="font-weight: 600;">{{ inc.rca.breaking_commit_sha[:7] }}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="section-label">Author</div>
+                            <div>{{ inc.rca.breaking_author }}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="section-label">Confidence</div>
+                            <div style="font-weight: 600;">{{ '%.0f' | format(inc.rca.confidence_score * 100) }}%</div>
+                        </div>
+                    </div>
+
+                    {% if inc.rca.matched_runbooks %}
+                    <div class="section-label" style="margin-top: 8px;">Matched Runbooks</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">
+                        {% for rb in inc.rca.matched_runbooks %}
+                        <div>- {{ rb.title }} ({{ '%.0f' | format(rb.score * 100) }}% match)</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <div class="section-label">Safety Guardrail Status</div>
+                    <div class="status-box {{ 'passed' if inc.guardrail.passed else 'blocked' }}">
+                        <strong>{{ 'Passed' if inc.guardrail.passed else 'Guardrail Intervened' }}</strong>
+                        <div style="margin-top: 4px;">
+                            {{ 'Safe for automated rollback.' if inc.guardrail.passed else inc.guardrail.blocked_reason }}
+                        </div>
+                    </div>
+
+                    {% if inc.rollback %}
+                    <div class="section-label">Rollback Action</div>
+                    <div class="meta-item" style="margin-bottom: 12px;">
+                        <div>Target SHA: <span class="mono">{{ inc.rollback.target_sha[:7] }}</span> ({{ inc.rollback.status }})</div>
+                        {% if inc.health %}
+                        <div style="margin-top: 4px; font-size: 11px; color: var(--text-muted);">{{ inc.health.message }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if not inc.guardrail.passed and inc.status != 'RESOLVED' %}
+                    <button class="primary" style="width: 100%; margin-top: 8px;" onclick="manualRollback('{{ inc.incident_id }}')">
+                        Override & Trigger Rollback
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Portfolio Test Modal -->
+    <div id="portfolioModal" class="modal-backdrop">
+        <div class="modal">
+            <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">Test Portfolio Website Incident</h3>
+            
+            <form onsubmit="submitPortfolioTest(event)">
+                <div class="form-group">
+                    <label>Service / Website Name</label>
+                    <input type="text" id="p_service" value="portfolio-website" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div class="form-group">
+                        <label>Failing Commit SHA</label>
+                        <input type="text" id="p_current_sha" value="c8e192a" required class="mono">
+                    </div>
+                    <div class="form-group">
+                        <label>Previous Stable SHA</label>
+                        <input type="text" id="p_prev_sha" value="b4f7310" required class="mono">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Commit Message</label>
+                    <input type="text" id="p_msg" value="feat: update navigation component" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Error Log</label>
+                    <textarea id="p_error" rows="3" required>TypeError: Cannot read properties of undefined at Header.jsx:24</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Git Diff Snippet</label>
+                    <textarea id="p_diff" rows="2" required>+ const isMenuOpen = navConfig.mobileMenu.isOpen;
+- const isMenuOpen = navConfig?.mobileMenu?.isOpen ?? false;</textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" onclick="closePortfolioModal()">Cancel</button>
+                    <button type="submit" id="submitBtn" class="primary">Submit Test</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openPortfolioModal() {
+            document.getElementById('portfolioModal').style.display = 'flex';
+        }
+
+        function closePortfolioModal() {
+            document.getElementById('portfolioModal').style.display = 'none';
+        }
+
+        async function triggerSimulation(url) {
+            const btn = event.currentTarget;
+            btn.disabled = true;
+            btn.innerText = 'Processing...';
+
+            try {
+                await fetch(url, { method: 'POST' });
+                window.location.reload();
+            } catch (err) {
+                alert('Request failed: ' + err);
+                window.location.reload();
+            }
+        }
+
+        async function submitPortfolioTest(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = 'Submitting...';
+
+            const payload = {
+                service_name: document.getElementById('p_service').value,
+                error_log: document.getElementById('p_error').value,
+                current_commit_sha: document.getElementById('p_current_sha').value,
+                previous_commit_sha: document.getElementById('p_prev_sha').value,
+                commit_author: "you@portfolio.dev",
+                commit_message: document.getElementById('p_msg').value,
+                changed_files: ["src/components/Header.jsx"],
+                diff_snippet: document.getElementById('p_diff').value
+            };
+
+            try {
+                await fetch('/api/v1/incident/alert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                closePortfolioModal();
+                window.location.reload();
+            } catch (err) {
+                alert('Failed: ' + err);
+                btn.disabled = false;
+                btn.innerText = 'Submit Test';
+            }
+        }
+
+        async function manualRollback(incidentId) {
+            if (!confirm(`Trigger rollback for ${incidentId}?`)) return;
+            try {
+                const resp = await fetch(`/api/v1/incident/${incidentId}/manual-rollback`, { method: 'POST' });
+                const data = await resp.json();
+                alert(data.message);
+                window.location.reload();
+            } catch (err) {
+                alert('Failed: ' + err);
+            }
+        }
+    </script>
+</body>
+</html>

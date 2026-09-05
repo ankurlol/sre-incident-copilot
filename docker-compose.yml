@@ -1,0 +1,45 @@
+﻿version: '3.8'
+
+services:
+  sre-copilot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sre-incident-copilot
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - DATABASE_URL=postgresql://sre_user:sre_password@postgres:5432/sre_incidents
+      - SIMULATE_GITHUB_ACTIONS=false
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_REPO_OWNER=${GITHUB_REPO_OWNER:-ankurlol}
+      - GITHUB_REPO_NAME=${GITHUB_REPO_NAME:-sample-payment-api}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: sre-postgres-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sre_user
+      POSTGRES_PASSWORD: sre_password
+      POSTGRES_DB: sre_incidents
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sre_user -d sre_incidents"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
