@@ -210,6 +210,24 @@ LINE 1: SELECT users.id, users.email, users.is_verified FROM users ...
     result = await process_incident(payload)
     return {"status": "simulated", "scenario": "Scenario 2: DB Migration Auto-Rollback Blocked", "incident": result}
 
+@app.get("/healthz")
+async def healthz():
+    db_status = "connected"
+    try:
+        from sqlalchemy import text
+        from src.db.database import engine
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except Exception as e:
+        db_status = f"unhealthy: {str(e)}"
+
+    is_healthy = "unhealthy" not in db_status
+    return {
+        "status": "healthy" if is_healthy else "degraded",
+        "app": settings.APP_NAME,
+        "database": db_status
+    }
+
 @app.get("/mock-target/healthz")
 async def mock_healthz():
     return {"status": "healthy", "version": "v2.4.1", "uptime": "99.99%"}

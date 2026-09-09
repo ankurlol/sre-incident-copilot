@@ -4,6 +4,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-green.svg)](https://fastapi.tiangolo.com)
 [![RAG](https://img.shields.io/badge/RAG-Hybrid%20BM25%20%2B%20Vector-purple.svg)](#key-features)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/ankurlol/sre-incident-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/ankurlol/sre-incident-copilot/actions)
 
 An enterprise-grade AIOps platform that ingests production crash alerts, performs **Hybrid RAG Root Cause Analysis (RCA)** over operational runbooks, post-mortems, and Git commit diffs, evaluates **Safety Guardrails** (database migration detection, anti-flapping rate limiters), and **autonomously dispatches GitHub Actions rollbacks** to restore production uptime within seconds.
 

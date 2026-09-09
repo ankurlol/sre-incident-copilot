@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional
+﻿from typing import Dict, Any, Optional
 from src.rag.rca_engine import RCAReport
 from src.automation.guardrails import GuardrailCheckResult
 
@@ -9,12 +9,12 @@ class IncidentReporter:
         guardrail: GuardrailCheckResult,
         rollback_result: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
-        status_emoji = "??" if rca.severity == "P1" else "??"
+        status_emoji = "🚨" if rca.severity in ["P0", "P1"] else "⚠️"
         if guardrail.passed and rollback_result and rollback_result.get("status") == "success":
             target = rollback_result.get("target_sha", "prev")[:7]
-            action_text = f"? Auto-Rollback Executed to {rca.breaking_commit_sha[:7]} ? {target}"
+            action_text = f"🔄 Auto-Rollback Executed: {rca.breaking_commit_sha[:7]} ➔ {target}"
         else:
-            action_text = f"?? Auto-Rollback Blocked: {guardrail.blocked_reason}"
+            action_text = f"🛑 Auto-Rollback Blocked: {guardrail.blocked_reason}"
 
         return {
             "incident_id": rca.incident_id,
@@ -39,24 +39,24 @@ class IncidentReporter:
             f"# Incident Report: {rca.incident_id}",
             f"**Service:** {rca.service_name} | **Severity:** {rca.severity} | **Confidence:** {rca.confidence_score:.0%}",
             "",
-            "## ?? Root Cause Analysis",
+            "## 🔍 Root Cause Analysis",
             rca.root_cause_summary,
             "",
             f"- **Breaking Commit:** `{rca.breaking_commit_sha[:7]}` by {rca.breaking_author}",
             f"- **Affected File:** `{rca.breaking_file}`",
             "",
-            "## ??? Guardrails & Remediation Status",
+            "## 🛡️ Guardrails & Remediation Status",
         ]
         if guardrail.passed:
-            lines.append("? **Safety Guardrails Passed:** Safe for automated remediation.")
+            lines.append("✅ **Safety Guardrails Passed:** Safe for automated remediation.")
             if rollback_result:
-                lines.append(f"?? **GitHub Rollback:** {rollback_result.get('message', 'Completed')}")
+                lines.append(f"🔄 **GitHub Rollback:** {rollback_result.get('message', 'Completed')}")
         else:
-            lines.append(f"?? **Auto-Rollback Blocked:** {guardrail.blocked_reason}")
+            lines.append(f"🛑 **Auto-Rollback Blocked:** {guardrail.blocked_reason}")
 
         lines.extend([
             "",
-            "## ?? Matched Runbooks & Mitigation Steps",
+            "## 📚 Matched Runbooks & Mitigation Steps",
         ])
         for step in rca.mitigation_steps:
             lines.append(f"1. {step}")
