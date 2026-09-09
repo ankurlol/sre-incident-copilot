@@ -1,0 +1,42 @@
+# ==============================================================================
+# Sample Target Service Rollback Workflow (e.g. deploy.yml in your microservice)
+# Place this workflow in your microservice repository (e.g. .github/workflows/deploy.yml).
+# The SRE Incident Copilot triggers this workflow autonomously to redeploy stable SHAs.
+# ==============================================================================
+name: Deploy Service & Auto-Rollback
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Target Commit SHA to deploy or rollback to"
+        required: false
+        default: ""
+      reason:
+        description: "Reason for workflow dispatch"
+        required: false
+        default: "Autonomous SRE Copilot Rollback"
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || github.sha }}
+
+      - name: Display Deployment Target
+        run: |
+          echo "Deploying commit: ${{ github.event.inputs.commit_sha || github.sha }}"
+          echo "Triggered by: ${{ github.event_name }}"
+          echo "Reason: ${{ github.event.inputs.reason || 'Standard Push' }}"
+
+      # Add your service build, test, and deploy steps here (e.g., docker build, helm, cloud run, etc.)
+      - name: Deploy Service
+        run: |
+          echo "Deployment successful."
