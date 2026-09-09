@@ -335,12 +335,14 @@ async def send_otp(payload: OTPSendPayload):
     if not code:
         return JSONResponse(status_code=429, content={"error": message})
 
+    expose_dev = os.getenv("EXPOSE_DEV_OTP", "false").lower() in ["true", "1", "yes"]
+
     return {
         "status": "success",
         "message": message,
         "email": email,
         "sent_via_smtp": sent_smtp,
-        "dev_code": code if not sent_smtp else None
+        "dev_code": code if expose_dev else None
     }
 
 @app.post("/api/v1/auth/otp/verify")

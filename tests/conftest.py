@@ -7,3 +7,5 @@ os.environ["DATABASE_URL"] = "sqlite:///./test_runner.db"
 os.environ["ADMIN_EMAIL"] = "ci.admin@test.local"
 os.environ["ADMIN_KEY"] = "ci_secret_key"
 os.environ["SIMULATE_GITHUB_ACTIONS"] = "true"
+os.environ["EXPOSE_DEV_OTP"] = "true"
+

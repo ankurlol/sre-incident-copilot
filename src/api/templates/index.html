@@ -1085,8 +1085,6 @@
                     <p id="memberTargetEmail" style="font-size: 13.5px; font-weight: 700; margin: 3px 0 0 0; color: #000;"></p>
                 </div>
 
-                <div id="memberDevBanner" style="display: none; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 10px; font-size: 12.5px; color: #1d4ed8; margin-bottom: 14px; text-align: center;"></div>
-
                 <form onsubmit="handleMemberVerifyOTP(event)">
                     <div class="form-group" style="text-align: center;">
                         <label style="display: block; margin-bottom: 6px;">Enter 6-Digit Verification Code</label>
@@ -1276,15 +1274,7 @@
                     document.getElementById('memberOtpStep1').style.display = 'none';
                     document.getElementById('memberOtpStep2').style.display = 'block';
                     document.getElementById('memberTargetEmail').innerText = email;
-
-                    const devBanner = document.getElementById('memberDevBanner');
-                    if (data.dev_code) {
-                        devBanner.style.display = 'block';
-                        devBanner.innerHTML = `<strong>Developer Code:</strong> <span style="font-family: monospace; font-size: 14px; font-weight: 800;">${data.dev_code}</span> (configure SMTP in .env for inbox delivery)`;
-                        document.getElementById('member_otp_code').value = data.dev_code;
-                    } else {
-                        devBanner.style.display = 'none';
-                    }
+                    document.getElementById('member_otp_code').value = '';
                     setTimeout(() => document.getElementById('member_otp_code').focus(), 100);
                 } else {
                     statusDiv.className = 'connection-status error';
