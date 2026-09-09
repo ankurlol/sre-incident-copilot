@@ -12,24 +12,25 @@ def test_admin_access_unauthenticated(client):
     response = client.get("/admin")
     assert response.status_code == 200
     assert "SRE Copilot Admin Console" in response.text
-    assert "Access Admin Portal" in response.text
+    assert "Send Admin Verification Code" in response.text
 
 def test_admin_direct_login_endpoint(client):
     import os
     admin_key = os.getenv("ADMIN_KEY") or os.getenv("API_KEY")
+    admin_email = os.getenv("ADMIN_EMAIL") or "lead.architect@company.com"
 
     # If key is required, request without key should fail with 401
     if admin_key:
         fail_resp = client.post(
             "/api/v1/auth/admin-login",
-            json={"email": "lead.architect@company.com", "name": "Lead Architect", "admin_key": "wrong_key"}
+            json={"email": admin_email, "name": "Lead Architect", "admin_key": "wrong_key"}
         )
         assert fail_resp.status_code == 401
 
     # Request with valid credentials
     resp = client.post(
         "/api/v1/auth/admin-login",
-        json={"email": "lead.architect@company.com", "name": "Lead Architect", "admin_key": admin_key}
+        json={"email": admin_email, "name": "Lead Architect", "admin_key": admin_key}
     )
     assert resp.status_code == 200
     data = resp.json()
@@ -51,6 +52,7 @@ def test_admin_api_telemetry_and_health(client):
         email="sre.lead@production.internal",
         name="Platform Admin Lead"
     )
+    UserRepository.set_user_role(admin_user["id"], "admin")
     client.cookies.set("sre_user_id", admin_user["id"])
 
     # Stats

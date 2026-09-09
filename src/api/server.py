@@ -19,6 +19,7 @@ from src.automation.health_verifier import HealthVerifier
 from src.notifications.reporter import IncidentReporter
 from src.security.sanitizer import LogSanitizer
 from src.security.auth import verify_api_key
+from src.security.otp_service import OTPService
 from src.db.repository import IncidentRepository, UserRepository, ProjectRepository
 
 app = FastAPI(title=settings.APP_NAME)
@@ -47,13 +48,25 @@ class AlertPayload(BaseModel):
 class GoogleAuthPayload(BaseModel):
     credential: str
 
+class OTPSendPayload(BaseModel):
+    email: str
+    purpose: str = "member_login"  # "member_login" or "admin_login"
+    admin_key: Optional[str] = None
+
+class OTPVerifyPayload(BaseModel):
+    email: str
+    code: str
+    name: Optional[str] = None
+    purpose: str = "member_login"
+    admin_key: Optional[str] = None
+
 class DemoLoginPayload(BaseModel):
-    email: Optional[str] = "alex.dev@acme.com"
-    name: Optional[str] = "Alex Rivera (Demo SRE)"
+    email: Optional[str] = None
+    name: Optional[str] = None
 
 class AdminLoginPayload(BaseModel):
-    email: Optional[str] = "alex.dev@acme.com"
-    name: Optional[str] = "Alex Rivera (Platform Admin)"
+    email: Optional[str] = None
+    name: Optional[str] = None
     admin_key: Optional[str] = None
 
 class CreateProjectPayload(BaseModel):
@@ -283,6 +296,125 @@ async def auth_google(payload: GoogleAuthPayload, response: Response):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": f"Authentication failed: {str(e)}"})
 
+@app.post("/api/v1/auth/otp/send")
+async def send_otp(payload: OTPSendPayload):
+    email = (payload.email or "").strip().lower()
+    if not email or "@" not in email or "." not in email:
+        return JSONResponse(status_code=400, content={"error": "Please provide a valid email address."})
+
+    purpose = payload.purpose or "member_login"
+
+    # Strict Admin Authorization Check
+    if purpose == "admin_login":
+        configured_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
+        configured_key = os.getenv("ADMIN_KEY") or os.getenv("API_KEY")
+
+        # Validate Admin Key if configured
+        if configured_key and payload.admin_key:
+            if payload.admin_key.strip() != configured_key:
+                return JSONResponse(status_code=401, content={"error": "Invalid Admin Access Key."})
+
+        # Check authorization of email
+        is_admin_allowed = False
+        if configured_email and email == configured_email:
+            is_admin_allowed = True
+        else:
+            existing_user = UserRepository.get_user_by_email(email)
+            if existing_user and existing_user.get("role") == "admin":
+                is_admin_allowed = True
+            elif not configured_email and len(UserRepository.get_all_users()) == 0:
+                is_admin_allowed = True
+
+        if not is_admin_allowed:
+            return JSONResponse(
+                status_code=403,
+                content={"error": f"Email '{email}' is not authorized as a platform administrator."}
+            )
+
+    code, sent_smtp, message = OTPService.generate_otp(email, purpose=purpose)
+    if not code:
+        return JSONResponse(status_code=429, content={"error": message})
+
+    return {
+        "status": "success",
+        "message": message,
+        "email": email,
+        "sent_via_smtp": sent_smtp,
+        "dev_code": code if not sent_smtp else None
+    }
+
+@app.post("/api/v1/auth/otp/verify")
+async def verify_otp(payload: OTPVerifyPayload, response: Response):
+    email = (payload.email or "").strip().lower()
+    code = (payload.code or "").strip()
+    purpose = payload.purpose or "member_login"
+
+    if not email or not code:
+        return JSONResponse(status_code=400, content={"error": "Email and 6-digit verification code are required."})
+
+    success, msg = OTPService.verify_otp(email=email, code=code, purpose=purpose)
+    if not success:
+        return JSONResponse(status_code=400, content={"error": msg})
+
+    name = payload.name or email.split("@")[0]
+
+    if purpose == "admin_login":
+        configured_key = os.getenv("ADMIN_KEY") or os.getenv("API_KEY")
+        if configured_key:
+            if not payload.admin_key or payload.admin_key.strip() != configured_key:
+                return JSONResponse(status_code=401, content={"error": "Invalid or missing Admin Access Key."})
+
+        configured_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
+        is_admin_allowed = False
+        if configured_email and email == configured_email:
+            is_admin_allowed = True
+        else:
+            existing_user = UserRepository.get_user_by_email(email)
+            if existing_user and existing_user.get("role") == "admin":
+                is_admin_allowed = True
+            elif not configured_email and len(UserRepository.get_all_users()) == 0:
+                is_admin_allowed = True
+
+        if not is_admin_allowed:
+            return JSONResponse(status_code=403, content={"error": f"Email '{email}' is not authorized as an administrator."})
+
+        sub_id = f"admin_{hashlib.md5(email.encode()).hexdigest()[:10]}"
+        user = UserRepository.get_or_create_user(
+            sub_id=sub_id,
+            email=email,
+            name=name,
+            picture="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+        )
+        UserRepository.set_user_role(user["id"], "admin")
+        user["role"] = "admin"
+        user["is_admin"] = True
+
+        response.set_cookie(
+            key="sre_user_id",
+            value=user["id"],
+            max_age=60 * 60 * 24 * 30,
+            httponly=False,
+            samesite="lax"
+        )
+        return {"status": "success", "user": user, "redirect": "/admin"}
+
+    else:
+        sub_id = f"user_{hashlib.md5(email.encode()).hexdigest()[:10]}"
+        user = UserRepository.get_or_create_user(
+            sub_id=sub_id,
+            email=email,
+            name=name,
+            picture="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+        )
+        response.set_cookie(
+            key="sre_user_id",
+            value=user["id"],
+            max_age=60 * 60 * 24 * 30,
+            httponly=False,
+            samesite="lax"
+        )
+        return {"status": "success", "user": user, "redirect": "/"}
+
 @app.post("/api/v1/auth/demo-login")
 async def demo_login(payload: DemoLoginPayload, response: Response):
     email = (payload.email or "alex.dev@acme.com").strip().lower()
@@ -308,17 +440,27 @@ async def admin_login(payload: AdminLoginPayload, response: Response):
     configured_key = os.getenv("ADMIN_KEY") or os.getenv("API_KEY")
     configured_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
 
-    # 1. If an ADMIN_KEY is defined in environment variables, enforce it
     if configured_key:
         if not payload.admin_key or payload.admin_key.strip() != configured_key:
             return JSONResponse(status_code=401, content={"error": "Invalid or missing Admin Access Key."})
-    elif configured_email:
-        # 2. If an ADMIN_EMAIL is defined (and no key set), verify email
-        email_input = (payload.email or "").strip().lower()
-        if email_input != configured_email and email_input not in ["alex.dev@acme.com", "sre.lead@production.internal"]:
-            return JSONResponse(status_code=403, content={"error": f"Email '{email_input}' is not authorized as an administrator."})
 
-    email = (payload.email or configured_email or "alex.dev@acme.com").strip().lower()
+    email = (payload.email or configured_email or "").strip().lower()
+    if not email:
+        return JSONResponse(status_code=400, content={"error": "Email is required."})
+
+    is_admin_allowed = False
+    if configured_email and email == configured_email:
+        is_admin_allowed = True
+    else:
+        existing_user = UserRepository.get_user_by_email(email)
+        if existing_user and existing_user.get("role") == "admin":
+            is_admin_allowed = True
+        elif not configured_email and len(UserRepository.get_all_users()) == 0:
+            is_admin_allowed = True
+
+    if not is_admin_allowed:
+        return JSONResponse(status_code=403, content={"error": f"Email '{email}' is not authorized as an administrator."})
+
     sub_id = f"admin_{hashlib.md5(email.encode()).hexdigest()[:10]}"
     name = payload.name or email.split("@")[0]
 
@@ -607,8 +749,8 @@ def get_current_admin(request: Request) -> Optional[Dict[str, Any]]:
     if not user:
         return None
 
-    admin_email = os.getenv("ADMIN_EMAIL", "alex.dev@acme.com").strip().lower()
-    if user.get("role") == "admin" or user.get("email", "").lower() in [admin_email, "sre.lead@production.internal"]:
+    admin_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
+    if user.get("role") == "admin" or (bool(admin_email) and user.get("email", "").lower() == admin_email):
         if user.get("role") != "admin":
             UserRepository.set_user_role(user["id"], "admin")
             user["role"] = "admin"

@@ -308,8 +308,8 @@ class UserRepository:
             user = db.query(UserModel).filter((UserModel.id == sub_id) | (UserModel.email == email)).first()
             if not user:
                 total_users = db.query(UserModel).count()
-                admin_email = os.getenv("ADMIN_EMAIL", "alex.dev@acme.com").strip().lower()
-                is_initial_admin = (total_users == 0) or (email.strip().lower() in [admin_email, "sre.lead@production.internal"])
+                admin_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
+                is_initial_admin = (total_users == 0) or (bool(admin_email) and email.strip().lower() == admin_email)
                 role = "admin" if is_initial_admin else "user"
 
                 user = UserModel(
@@ -342,6 +342,15 @@ class UserRepository:
         db = SessionLocal()
         try:
             user = db.query(UserModel).filter(UserModel.id == user_id).first()
+            return UserRepository._to_dict(user) if user else None
+        finally:
+            db.close()
+
+    @staticmethod
+    def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
+        db = SessionLocal()
+        try:
+            user = db.query(UserModel).filter(UserModel.email == email.strip().lower()).first()
             return UserRepository._to_dict(user) if user else None
         finally:
             db.close()

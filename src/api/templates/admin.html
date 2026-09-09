@@ -520,27 +520,58 @@
             </div>
             {% endif %}
 
-            <form onsubmit="handleAdminLogin(event)">
-                <div style="margin-bottom: 14px;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px;">Administrator Email</label>
-                    <input type="email" id="admin_email" style="width: 100%; padding: 10px 12px; font-size: 13.5px; border: 1px solid var(--border-dark); border-radius: 6px; outline: none;" value="alex.dev@acme.com" required>
+            <!-- Step 1: Request Admin OTP -->
+            <div id="adminStep1">
+                <form onsubmit="handleRequestAdminOTP(event)">
+                    <div style="margin-bottom: 14px;">
+                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px;">Administrator Email</label>
+                        <input type="email" id="admin_email" placeholder="you@company.com" style="width: 100%; padding: 10px 12px; font-size: 13.5px; border: 1px solid var(--border-dark); border-radius: 6px; outline: none;" required>
+                    </div>
+
+                    <div style="margin-bottom: 18px;">
+                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px;">Admin Access Key (Optional)</label>
+                        <input type="password" id="admin_key" placeholder="Enter key if configured in .env" style="width: 100%; padding: 10px 12px; font-size: 13.5px; border: 1px solid var(--border-dark); border-radius: 6px; outline: none;">
+                    </div>
+
+                    <div id="adminStep1Status" style="display: none; padding: 10px; border-radius: 6px; font-size: 12.5px; margin-bottom: 14px;"></div>
+
+                    <button type="submit" id="adminSendOtpBtn" style="width: 100%; padding: 11px; font-size: 14px; margin-bottom: 12px;">
+                        Send Admin Verification Code &rarr;
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 2: Verify 6-Digit OTP -->
+            <div id="adminStep2" style="display: none;">
+                <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 18px; text-align: center;">
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Code dispatched to:</p>
+                    <p id="adminTargetEmail" style="font-size: 14px; font-weight: 700; margin: 4px 0 0 0; color: #000;"></p>
                 </div>
 
-                <div style="margin-bottom: 18px;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px;">Admin Access Key (Optional)</label>
-                    <input type="password" id="admin_key" placeholder="Enter key if configured in .env" style="width: 100%; padding: 10px 12px; font-size: 13.5px; border: 1px solid var(--border-dark); border-radius: 6px; outline: none;">
-                </div>
+                <div id="adminDevBanner" style="display: none; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 10px; font-size: 12.5px; color: #1d4ed8; margin-bottom: 14px; text-align: center;"></div>
 
-                <div id="adminLoginStatus" style="display: none; padding: 10px; border-radius: 6px; font-size: 12.5px; margin-bottom: 14px;"></div>
+                <form onsubmit="handleVerifyAdminOTP(event)">
+                    <div style="margin-bottom: 18px;">
+                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; text-align: center;">Enter 6-Digit Verification Code</label>
+                        <input type="text" id="admin_otp_code" maxlength="6" placeholder="••••••" style="width: 100%; padding: 12px; font-size: 24px; font-family: var(--font-mono); font-weight: 800; letter-spacing: 8px; text-align: center; border: 2px solid #000000; border-radius: 8px; outline: none;" required>
+                    </div>
 
-                <button type="submit" id="adminLoginBtn" style="width: 100%; padding: 11px; font-size: 14px; margin-bottom: 12px;">
-                    Access Admin Portal &rarr;
-                </button>
+                    <div id="adminStep2Status" style="display: none; padding: 10px; border-radius: 6px; font-size: 12.5px; margin-bottom: 14px;"></div>
 
-                <button type="button" class="btn-outline" style="width: 100%; padding: 9px; font-size: 12.5px;" onclick="quickAdminDemoLogin()">
-                    ⚡ Instant Demo Admin Access (1-Click)
-                </button>
-            </form>
+                    <button type="submit" id="adminVerifyBtn" style="width: 100%; padding: 11px; font-size: 14px; margin-bottom: 12px;">
+                        Verify & Enter Admin Console &rarr;
+                    </button>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                        <button type="button" class="btn-outline" style="font-size: 11.5px; padding: 6px 12px;" onclick="switchAdminToStep1()">
+                            &larr; Different Email
+                        </button>
+                        <button type="button" class="btn-outline" style="font-size: 11.5px; padding: 6px 12px;" onclick="resendAdminOTP()">
+                            ↻ Resend Code
+                        </button>
+                    </div>
+                </form>
+            </div>
 
             <div style="text-align: center; margin-top: 24px; border-top: 1px solid var(--border); padding-top: 16px;">
                 <a href="/" style="font-size: 12.5px; color: var(--text-muted); text-decoration: none; font-weight: 600;">
@@ -973,22 +1004,96 @@
             }
         }
 
-        // Admin Login Form Handler
-        async function handleAdminLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('admin_email').value.trim();
-            const admin_key = document.getElementById('admin_key').value.trim();
-            const btn = document.getElementById('adminLoginBtn');
-            const statusDiv = document.getElementById('adminLoginStatus');
+        let activeAdminEmail = '';
+        let activeAdminKey = '';
+
+        // Request Admin OTP
+        async function handleRequestAdminOTP(e) {
+            if (e) e.preventDefault();
+            const emailInput = document.getElementById('admin_email');
+            const keyInput = document.getElementById('admin_key');
+            const email = emailInput.value.trim();
+            const admin_key = keyInput.value.trim();
+            const btn = document.getElementById('adminSendOtpBtn');
+            const statusDiv = document.getElementById('adminStep1Status');
+
+            if (!email) return;
+            activeAdminEmail = email;
+            activeAdminKey = admin_key;
 
             btn.disabled = true;
-            btn.innerText = 'Authenticating...';
+            btn.innerText = 'Dispatching Code...';
+            statusDiv.style.display = 'none';
 
             try {
-                const res = await fetch('/api/v1/auth/admin-login', {
+                const res = await fetch('/api/v1/auth/otp/send', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email, admin_key: admin_key || undefined })
+                    body: JSON.stringify({ email: email, purpose: 'admin_login', admin_key: admin_key || undefined })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('adminStep1').style.display = 'none';
+                    document.getElementById('adminStep2').style.display = 'block';
+                    document.getElementById('adminTargetEmail').innerText = email;
+
+                    const devBanner = document.getElementById('adminDevBanner');
+                    if (data.dev_code) {
+                        devBanner.style.display = 'block';
+                        devBanner.innerHTML = `<strong>Developer Code:</strong> <span style="font-family: monospace; font-size: 14px; font-weight: 800;">${data.dev_code}</span> (configure SMTP in .env for inbox delivery)`;
+                        document.getElementById('admin_otp_code').value = data.dev_code;
+                    } else {
+                        devBanner.style.display = 'none';
+                    }
+                    setTimeout(() => document.getElementById('admin_otp_code').focus(), 100);
+                } else {
+                    statusDiv.style.display = 'block';
+                    statusDiv.style.background = 'var(--danger-bg)';
+                    statusDiv.style.color = 'var(--danger)';
+                    statusDiv.style.border = '1px solid #fecaca';
+                    statusDiv.innerText = data.error || 'Failed to dispatch verification code.';
+                    btn.disabled = false;
+                    btn.innerText = 'Send Admin Verification Code →';
+                }
+            } catch (err) {
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = 'var(--danger-bg)';
+                statusDiv.style.color = 'var(--danger)';
+                statusDiv.innerText = 'Network error: ' + err.message;
+                btn.disabled = false;
+                btn.innerText = 'Send Admin Verification Code →';
+            }
+        }
+
+        // Verify Admin OTP
+        async function handleVerifyAdminOTP(e) {
+            if (e) e.preventDefault();
+            const code = document.getElementById('admin_otp_code').value.trim();
+            const btn = document.getElementById('adminVerifyBtn');
+            const statusDiv = document.getElementById('adminStep2Status');
+
+            if (!code || code.length !== 6) {
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = 'var(--danger-bg)';
+                statusDiv.style.color = 'var(--danger)';
+                statusDiv.innerText = 'Please enter a valid 6-digit verification code.';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = 'Verifying Code...';
+            statusDiv.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/v1/auth/otp/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: activeAdminEmail,
+                        code: code,
+                        purpose: 'admin_login',
+                        admin_key: activeAdminKey || undefined
+                    })
                 });
                 const data = await res.json();
                 if (res.ok) {
@@ -998,30 +1103,30 @@
                     statusDiv.style.background = 'var(--danger-bg)';
                     statusDiv.style.color = 'var(--danger)';
                     statusDiv.style.border = '1px solid #fecaca';
-                    statusDiv.innerText = data.error || 'Authentication failed.';
+                    statusDiv.innerText = data.error || 'Verification failed.';
                     btn.disabled = false;
-                    btn.innerText = 'Access Admin Portal →';
+                    btn.innerText = 'Verify & Enter Admin Console →';
                 }
             } catch (err) {
                 statusDiv.style.display = 'block';
                 statusDiv.style.background = 'var(--danger-bg)';
                 statusDiv.style.color = 'var(--danger)';
-                statusDiv.innerText = 'Error: ' + err.message;
+                statusDiv.innerText = 'Network error: ' + err.message;
                 btn.disabled = false;
-                btn.innerText = 'Access Admin Portal →';
+                btn.innerText = 'Verify & Enter Admin Console →';
             }
         }
 
-        // Quick Admin Demo Login (1-Click)
-        async function quickAdminDemoLogin() {
-            const res = await fetch('/api/v1/auth/admin-login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: 'sre.lead@production.internal', name: 'Alex Rivera (Platform Lead)' })
-            });
-            if (res.ok) {
-                window.location.reload();
-            }
+        function switchAdminToStep1() {
+            document.getElementById('adminStep2').style.display = 'none';
+            document.getElementById('adminStep1').style.display = 'block';
+            const btn = document.getElementById('adminSendOtpBtn');
+            btn.disabled = false;
+            btn.innerText = 'Send Admin Verification Code →';
+        }
+
+        function resendAdminOTP() {
+            handleRequestAdminOTP();
         }
     </script>
 </body>
