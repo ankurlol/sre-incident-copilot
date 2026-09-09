@@ -1,57 +1,57 @@
-# ?? Self-Healing SRE Incident Copilot & Automated GitHub Rollback Engine
+# ðŸ›¡ï¸ Self-Healing SRE Incident Copilot & Automated GitHub Rollback Engine
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-green.svg)](https://fastapi.tiangolo.com)
-[![RAG](https://img.shields.io/badge/RAG-Hybrid%20BM25%20%2B%20Vector-purple.svg)]()
-[![License](https://img.shields.io/badge/License-MIT-orange.svg)]()
+[![RAG](https://img.shields.io/badge/RAG-Hybrid%20BM25%20%2B%20Vector-purple.svg)](#key-features)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 An enterprise-grade AIOps platform that ingests production crash alerts, performs **Hybrid RAG Root Cause Analysis (RCA)** over operational runbooks, post-mortems, and Git commit diffs, evaluates **Safety Guardrails** (database migration detection, anti-flapping rate limiters), and **autonomously dispatches GitHub Actions rollbacks** to restore production uptime within seconds.
 
 ---
 
-## ??? Architecture Overview
+## ðŸ—ï¸ Architecture Overview
 
 ```
  +--------------------------------------------------------+
- ¦ 1. Production Crash / Alert Payload Ingestion          ¦
- ¦    (Sentry / Prometheus / CloudWatch Webhook)          ¦
+ | 1. Production Crash / Alert Payload Ingestion          |
+ |    (Sentry / Prometheus / CloudWatch Webhook)          |
  +--------------------------------------------------------+
-                            ¦
-                            ?
+                            |
+                            v
  +--------------------------------------------------------+
- ¦ 2. Git Tracker & Diff Analyzer                         ¦
- ¦    • Extracts breaking commit, author & changed files  ¦
- ¦    • Scans for database schema migration scripts       ¦
+ | 2. Git Tracker & Diff Analyzer                         |
+ |    - Extracts breaking commit, author & changed files  |
+ |    - Scans for database schema migration scripts       |
  +--------------------------------------------------------+
-                            ¦
-                            ?
+                            |
+                            v
  +--------------------------------------------------------+
- ¦ 3. Hybrid RAG Diagnostic Engine                        ¦
- ¦    • Sparse (BM25) + Dense Vector Semantic Search      ¦
- ¦    • Reciprocal Rank Fusion (RRF) over Runbooks & SOPs ¦
- ¦    • LLM Root Cause Analysis & Confidence Scoring      ¦
+ | 3. Hybrid RAG Diagnostic Engine                        |
+ |    - Sparse (BM25) + Dense Vector Semantic Search      |
+ |    - Reciprocal Rank Fusion (RRF) over Runbooks & SOPs |
+ |    - LLM Root Cause Analysis & Confidence Scoring      |
  +--------------------------------------------------------+
-                            ¦
-                            ?
+                            |
+                            v
  +--------------------------------------------------------+
- ¦ 4. Enterprise Safety Guardrails                        ¦
- ¦    • DB Migration Protection (prevents data loss)      ¦
- ¦    • Anti-Flapping / Rate Limiting                     ¦
- ¦    • Minimum Confidence Threshold Filter (>= 75%)      ¦
+ | 4. Enterprise Safety Guardrails                        |
+ |    - DB Migration Protection (prevents data loss)      |
+ |    - Anti-Flapping / Rate Limiting                     |
+ |    - Minimum Confidence Threshold Filter (>= 75%)      |
  +--------------------------------------------------------+
-               ¦ (Passed)                   ¦ (Blocked)
-               ?                            ?
+               | (Passed)                   | (Blocked)
+               v                            v
  +---------------------------+   +------------------------+
- ¦ 5A. Autonomous Rollback   ¦   ¦ 5B. Human-in-the-Loop  ¦
- ¦  • GitHub Actions Dispatch¦   ¦  • Flagged in SRE Feed ¦
- ¦  • Redeploys previous SHA ¦   ¦  • 1-Click Manual UI   ¦
- ¦  • Polls /healthz endpoint¦   +------------------------+
+ | 5A. Autonomous Rollback   |   | 5B. Human-in-the-Loop  |
+ |  - GitHub Actions Dispatch|   |  - Flagged in SRE Feed |
+ |  - Redeploys previous SHA |   |  - 1-Click Manual UI   |
+ |  - Polls /healthz endpoint|   +------------------------+
  +---------------------------+
 ```
 
 ---
 
-## ? Key Features
+## ðŸš€ Key Features
 
 1. **Hybrid RAG Knowledge Base:** Indexes Markdown Runbooks, Historical Post-Mortems, and Git commit diffs using Reciprocal Rank Fusion (BM25 + Semantic Vector search).
 2. **LLM Diagnostic Root Cause Analysis (RCA):** Identifies exact breaking code lines, analyzes stack traces, and recommends concrete mitigation steps with confidence scores.
@@ -65,7 +65,7 @@ An enterprise-grade AIOps platform that ingests production crash alerts, perform
 
 ---
 
-## ?? Quickstart
+## âš¡ Quickstart
 
 ### 1. Installation
 ```bash
@@ -90,14 +90,14 @@ Open your browser at **http://localhost:8000** to access the interactive dashboa
 
 ---
 
-## ?? Running Tests
+## ðŸ§ª Running Tests
 ```bash
 pytest tests/test_scenarios.py -v
 ```
 
 ---
 
-## ?? API Reference & Webhook Integration
+## ðŸ“¡ API Reference & Webhook Integration
 
 ### Receive Alert Webhook
 `POST /api/v1/incident/alert`
@@ -117,5 +117,7 @@ pytest tests/test_scenarios.py -v
 
 ---
 
-## ?? License
-MIT
+## ðŸ“„ License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
