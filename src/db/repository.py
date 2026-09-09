@@ -61,6 +61,15 @@ class ProjectRepository:
             db.close()
 
     @staticmethod
+    def get_project_raw_token(project_id: str) -> Optional[str]:
+        db = SessionLocal()
+        try:
+            p = db.query(ProjectModel).filter(ProjectModel.id == project_id).first()
+            return p.github_token if p else None
+        finally:
+            db.close()
+
+    @staticmethod
     def delete_project(project_id: str, user_id: str) -> bool:
         db = SessionLocal()
         try:

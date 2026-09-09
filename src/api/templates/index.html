@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ app_name }} - Autonomous Self-Healing SRE Platform</title>
-    <!-- Google Identity Services -->
+    {% if google_client_id %}
+    <!-- Google Identity Services (only loaded when client ID is configured) -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    {% endif %}
     <style>
         :root {
             --bg: #ffffff;
@@ -150,6 +152,17 @@
         button.btn-outline:hover, .btn.btn-outline:hover {
             background: #f4f4f5 !important;
             border-color: #000000;
+        }
+
+        button.btn-danger-outline {
+            background: #ffffff !important;
+            color: var(--danger) !important;
+            border: 1px solid #fecaca;
+        }
+
+        button.btn-danger-outline:hover {
+            background: var(--danger-bg) !important;
+            border-color: var(--danger);
         }
 
         button.btn-lg, .btn.btn-lg {
@@ -317,6 +330,47 @@
             font-size: 13px;
             color: var(--text-muted);
             line-height: 1.5;
+        }
+
+        /* Architecture Section */
+        .arch-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 80px;
+            overflow-x: auto;
+        }
+
+        .arch-node {
+            flex: 1;
+            min-width: 140px;
+            text-align: center;
+            padding: 16px 12px;
+            background: var(--surface-subtle);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .arch-node-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .arch-node-sub {
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+
+        .arch-arrow {
+            color: var(--text-muted);
+            font-weight: bold;
+            font-size: 18px;
         }
 
         /* Footer CTA Banner */
@@ -536,9 +590,9 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             width: 100%;
-            max-width: 540px;
-            padding: 26px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            max-width: 500px;
+            padding: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
             max-height: 90vh;
             overflow-y: auto;
         }
@@ -552,11 +606,20 @@
             padding-bottom: 14px;
         }
 
-        .modal-title { font-size: 17px; font-weight: 700; }
-        .close-btn { background: transparent !important; border: none !important; color: var(--text-muted) !important; font-size: 24px; cursor: pointer; }
+        .modal-title { font-size: 18px; font-weight: 700; }
+        .close-btn {
+            background: transparent !important;
+            border: none !important;
+            color: var(--text-muted) !important;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+        .close-btn:hover { color: #000000 !important; }
 
-        .form-group { margin-bottom: 14px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: var(--text-main); }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: var(--text-main); }
         .form-group .help-text { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
         .form-group input, .form-group textarea, .form-group select {
             width: 100%;
@@ -567,6 +630,7 @@
             border-radius: 6px;
             background: #ffffff;
             outline: none;
+            transition: border-color 0.15s;
         }
         .form-group input:focus { border-color: #000000; }
 
@@ -574,7 +638,7 @@
             display: flex;
             justify-content: flex-end;
             gap: 10px;
-            margin-top: 22px;
+            margin-top: 24px;
             border-top: 1px solid var(--border);
             padding-top: 16px;
         }
@@ -588,6 +652,41 @@
         }
         .connection-status.success { display: block; background: var(--success-bg); color: #15803d; border: 1px solid #bbf7d0; }
         .connection-status.error { display: block; background: var(--danger-bg); color: #b91c1c; border: 1px solid #fecaca; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 18px 0;
+            color: var(--text-muted);
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border);
+        }
+        .divider span { padding: 0 10px; }
+
+        /* Toast notifications */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #000000;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 9999;
+            align-items: center;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -608,26 +707,23 @@
             </ul>
 
             <div class="nav-auth">
-                <div id="g_id_onload"
-                     data-client_id="{{ google_client_id }}"
-                     data-callback="handleGoogleSignIn"
-                     data-auto_prompt="false">
-                </div>
-                <div class="g_id_signin" data-type="standard" data-size="medium" data-theme="outline" data-text="signin_with" data-shape="rectangular"></div>
-                <button onclick="handleDemoLogin()">
-                    Sign In / Sandbox Demo
+                <button type="button" class="btn-outline" onclick="openAuthModal()">
+                    Sign In
+                </button>
+                <button type="button" onclick="openAuthModal()">
+                    Get Started &rarr;
                 </button>
             </div>
             {% else %}
             <div class="nav-auth">
                 <div class="pill-badge" style="gap: 8px;">
                     {% if current_user.picture %}
-                        <img src="{{ current_user.picture }}" alt="User" style="width: 22px; height: 22px; border-radius: 50%;">
+                        <img src="{{ current_user.picture }}" alt="User" style="width: 20px; height: 20px; border-radius: 50%;">
                     {% endif %}
                     <span>{{ current_user.name }}</span>
                 </div>
-                <button onclick="openCreateProjectModal()">+ New Project</button>
-                <button class="btn-outline" onclick="handleLogout()">Sign Out</button>
+                <button type="button" onclick="openCreateProjectModal()">+ New Project</button>
+                <button type="button" class="btn-outline" onclick="handleLogout()">Sign Out</button>
             </div>
             {% endif %}
         </div>
@@ -655,7 +751,7 @@
             </p>
 
             <div class="hero-cta">
-                <button class="btn-lg" onclick="handleDemoLogin()">
+                <button type="button" class="btn-lg" onclick="openAuthModal()">
                     Get Started with Google &rarr;
                 </button>
                 <a href="#how-it-works" class="btn btn-lg btn-outline">
@@ -675,7 +771,7 @@
                 <div class="service-card">
                     <div class="service-icon">🔍</div>
                     <h3 class="service-name">Hybrid RAG RCA Engine</h3>
-                    <p class="service-detail">Combines Sparse BM25 and Dense Vector search over operational runbooks, past incident post-mortems, and Git commit diffs to locate exact breaking lines.</p>
+                    <p class="service-detail">Combines Sparse BM25 and Dense Vector search over operational runbooks, past incident post-mortems, and Git commit diffs to pinpoint exact breaking changes.</p>
                 </div>
 
                 <div class="service-card">
@@ -730,11 +826,46 @@
             </div>
         </section>
 
+        <!-- Architecture Section -->
+        <section id="architecture">
+            <div class="section-header">
+                <h2 class="section-title">Platform Architecture</h2>
+                <p class="section-desc">Fully decoupled, multi-tenant incident response pipeline with zero data leakage.</p>
+            </div>
+
+            <div class="arch-diagram">
+                <div class="arch-node">
+                    <div class="arch-node-title">📡 Crash Webhook</div>
+                    <div class="arch-node-sub">Sentry / Prometheus</div>
+                </div>
+                <div class="arch-arrow">&rarr;</div>
+                <div class="arch-node">
+                    <div class="arch-node-title">🔒 Log Sanitizer</div>
+                    <div class="arch-node-sub">PII & Secret Redaction</div>
+                </div>
+                <div class="arch-arrow">&rarr;</div>
+                <div class="arch-node">
+                    <div class="arch-node-title">🧠 Hybrid RAG + LLM</div>
+                    <div class="arch-node-sub">BM25 + Vector Search</div>
+                </div>
+                <div class="arch-arrow">&rarr;</div>
+                <div class="arch-node">
+                    <div class="arch-node-title">🛡️ Safety Guardrails</div>
+                    <div class="arch-node-sub">DB Migration Check</div>
+                </div>
+                <div class="arch-arrow">&rarr;</div>
+                <div class="arch-node">
+                    <div class="arch-node-title">🚀 GitOps Rollback</div>
+                    <div class="arch-node-sub">GitHub Actions Dispatch</div>
+                </div>
+            </div>
+        </section>
+
         <!-- Bottom CTA -->
         <section class="bottom-cta">
             <h2>Ready to heal your production services?</h2>
             <p>Set up your account in 30 seconds. Connect your GitHub repository and eliminate midnight outage fires forever.</p>
-            <button class="btn-lg" style="background: #ffffff !important; color: #000000 !important; border-color: #ffffff;" onclick="handleDemoLogin()">
+            <button type="button" class="btn-lg" style="background: #ffffff !important; color: #000000 !important; border-color: #ffffff;" onclick="openAuthModal()">
                 Sign In & Setup Your Project &rarr;
             </button>
         </section>
@@ -752,8 +883,8 @@
                 <p style="font-size: 13.5px; color: var(--text-muted);">Manage monitored services, automated rollbacks, and incident history</p>
             </div>
             <div style="display: flex; gap: 8px;">
-                <button onclick="openCreateProjectModal()">+ Create New Project</button>
-                <button class="btn-outline" onclick="window.location.reload()">Refresh</button>
+                <button type="button" onclick="openCreateProjectModal()">+ Create New Project</button>
+                <button type="button" class="btn-outline" onclick="window.location.reload()">Refresh</button>
             </div>
         </div>
 
@@ -763,7 +894,7 @@
             <div style="font-size: 42px; margin-bottom: 16px;">🚀</div>
             <h3>Welcome to SRE Incident Copilot</h3>
             <p>You do not have any monitored services configured yet. Set up your first project to connect your GitHub repository and enable autonomous incident diagnostics and automated rollbacks.</p>
-            <button class="btn-lg" onclick="openCreateProjectModal()">
+            <button type="button" class="btn-lg" onclick="openCreateProjectModal()">
                 + Create Your First Project
             </button>
         </div>
@@ -786,10 +917,13 @@
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <div class="webhook-pill">
                     <span>Webhook: /api/v1/projects/{{ active_project.id }}/alert</span>
-                    <button class="copy-btn" onclick="copyWebhookUrl('{{ active_project.id }}')">Copy URL</button>
+                    <button type="button" class="copy-btn" id="copyWebhookBtn" onclick="copyWebhookUrl('{{ active_project.id }}')">Copy URL</button>
                 </div>
-                <button onclick="triggerProjectSimulation('{{ active_project.id }}')">
+                <button type="button" id="simulateBtn" onclick="triggerProjectSimulation('{{ active_project.id }}')">
                     ⚡ Test Crash Simulation
+                </button>
+                <button type="button" class="btn-danger-outline" onclick="deleteCurrentProject('{{ active_project.id }}', '{{ active_project.name }}')">
+                    Delete Service
                 </button>
             </div>
             {% endif %}
@@ -799,8 +933,8 @@
         <div class="incident-list">
             {% if not incidents %}
             <div class="empty-project-state" style="padding: 50px 20px;">
-                <h3 style="font-size: 16px;">No incidents recorded for {{ active_project.name }}</h3>
-                <p style="font-size: 13px;">Service is healthy. Click "Test Crash Simulation" above or configure your Sentry/Prometheus webhook to send production crash alerts here.</p>
+                <h3 style="font-size: 16px;">No incidents recorded for {{ active_project.name if active_project else 'this service' }}</h3>
+                <p style="font-size: 13px;">Service is healthy. Click "Test Crash Simulation" above or send crash payloads to this project's alert webhook.</p>
             </div>
             {% endif %}
 
@@ -840,7 +974,7 @@
 
                         {% if inc.rca.mitigation_steps %}
                         <div class="section-label">Recommended Action Items</div>
-                        <ul style="font-size: 12.5px; margin-left: 18px;">
+                        <ul style="font-size: 12.5px; margin-left: 18px; line-height: 1.6;">
                             {% for step in inc.rca.mitigation_steps %}
                             <li>{{ step }}</li>
                             {% endfor %}
@@ -858,7 +992,7 @@
                         {% if inc.rollback %}
                         <div class="section-label">Remediation Action</div>
                         <div class="meta-item" style="margin-bottom: 12px;">
-                            <div>Target SHA: <span class="mono" style="font-weight: 700;">{{ inc.rollback.target_sha[:7] }}</span></div>
+                            <div>Target SHA: <span class="mono" style="font-weight: 700;">{{ inc.rollback.target_sha[:7] if inc.rollback.target_sha else 'N/A' }}</span></div>
                             <div style="margin-top: 3px; font-size: 11.5px; color: var(--text-muted);">{{ inc.rollback.message or 'Completed' }}</div>
                             {% if inc.health %}
                             <div style="margin-top: 4px; font-size: 11.5px; color: #16a34a; font-weight: 600;">✓ {{ inc.health.message }}</div>
@@ -867,7 +1001,7 @@
                         {% endif %}
 
                         {% if not inc.guardrail.passed and inc.status != 'RESOLVED' %}
-                        <button style="width: 100%; margin-top: 8px;" onclick="manualRollback('{{ inc.incident_id }}')">
+                        <button type="button" style="width: 100%; margin-top: 8px;" onclick="manualRollback('{{ inc.incident_id }}')">
                             Override Guardrail & Trigger Rollback
                         </button>
                         {% endif %}
@@ -880,12 +1014,76 @@
     </main>
     {% endif %}
 
-    <!-- Create Project Modal -->
+    <!-- ----------------------------------------------------------------- -->
+    <!-- AUTHENTICATION MODAL (Login / Signup)                             -->
+    <!-- ----------------------------------------------------------------- -->
+    <div id="authModal" class="modal-backdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <div>
+                    <h3 class="modal-title">Sign In to SRE Copilot</h3>
+                    <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">Connect to manage your autonomous service reliability</p>
+                </div>
+                <button type="button" class="close-btn" onclick="closeAuthModal()">&times;</button>
+            </div>
+
+            {% if google_client_id %}
+            <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+                <div id="g_id_onload"
+                     data-client_id="{{ google_client_id }}"
+                     data-callback="handleGoogleSignIn"
+                     data-auto_prompt="false">
+                </div>
+                <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="signin_with" data-shape="rectangular" data-width="380"></div>
+            </div>
+            {% else %}
+            <button type="button" class="btn-outline" style="width: 100%; padding: 11px; font-size: 14px;" onclick="handleGoogleSignInFallback()">
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                Continue with Google
+            </button>
+            {% endif %}
+
+            <div class="divider">
+                <span>or continue with email</span>
+            </div>
+
+            <form onsubmit="handleEmailLogin(event)">
+                <div class="form-group">
+                    <label>Work or Personal Email</label>
+                    <input type="email" id="login_email" placeholder="e.g. dev@company.com" required value="engineer@company.com">
+                </div>
+
+                <div id="authStatus" class="connection-status"></div>
+
+                <button type="submit" id="emailLoginBtn" style="width: 100%; padding: 11px; font-size: 14px;">
+                    Sign In with Email &rarr;
+                </button>
+            </form>
+
+            <div style="margin-top: 16px; text-align: center;">
+                <button type="button" class="btn-outline" style="width: 100%; font-size: 12.5px; padding: 8px;" onclick="handleQuickDemoLogin()">
+                    ⚡ Instant Sandbox Demo (1-Click Login)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ----------------------------------------------------------------- -->
+    <!-- CREATE PROJECT MODAL                                              -->
+    <!-- ----------------------------------------------------------------- -->
     <div id="createProjectModal" class="modal-backdrop">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title">Create New Monitored Project</h3>
-                <button class="close-btn" onclick="closeCreateProjectModal()">&times;</button>
+                <div>
+                    <h3 class="modal-title">Create New Monitored Project</h3>
+                    <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">Connect your GitHub repository for automated incident rollbacks</p>
+                </div>
+                <button type="button" class="close-btn" onclick="closeCreateProjectModal()">&times;</button>
             </div>
 
             <form onsubmit="handleCreateProject(event)">
@@ -908,7 +1106,7 @@
                 <div class="form-group">
                     <label>GitHub Personal Access Token (PAT)</label>
                     <input type="password" id="cp_token" placeholder="ghp_... or github_pat_..." required>
-                    <p class="help-text">Requires <code>repo</code> and <code>workflow</code> permissions to dispatch rollbacks.</p>
+                    <p class="help-text">Requires <code>repo</code> and <code>workflow</code> permissions to trigger deployment rollbacks.</p>
                 </div>
 
                 <div class="form-group">
@@ -924,14 +1122,60 @@
                 <div id="createProjectStatus" class="connection-status"></div>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn-outline" onclick="testNewProjectConnection()">Test GitHub Connection</button>
-                    <button type="submit">Create Project</button>
+                    <button type="button" class="btn-outline" id="testConnBtn" onclick="testNewProjectConnection()">Test GitHub Connection</button>
+                    <button type="submit" id="createProjSubmitBtn">Create Project</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Floating Toast Notification -->
+    <div id="toast"></div>
+
     <script>
+        // Toast helper
+        function showToast(message, duration = 3000) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.display = 'flex';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, duration);
+        }
+
+        // Modal Open / Close Handlers
+        function openAuthModal() {
+            document.getElementById('authModal').style.display = 'flex';
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').style.display = 'none';
+        }
+
+        function openCreateProjectModal() {
+            document.getElementById('createProjectModal').style.display = 'flex';
+        }
+
+        function closeCreateProjectModal() {
+            document.getElementById('createProjectModal').style.display = 'none';
+        }
+
+        // Close on Escape or Backdrop Click
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeAuthModal();
+                closeCreateProjectModal();
+            }
+        });
+
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+            backdrop.addEventListener('click', (e) => {
+                if (e.target === backdrop) {
+                    backdrop.style.display = 'none';
+                }
+            });
+        });
+
         // Google Sign In Callback
         async function handleGoogleSignIn(response) {
             try {
@@ -951,64 +1195,114 @@
             }
         }
 
-        // Demo / Instant Login
-        async function handleDemoLogin() {
-            const email = prompt('Enter your work or developer email (or leave default):', 'engineer@company.com');
+        // Fallback when Google Client ID is not configured
+        async function handleGoogleSignInFallback() {
+            const email = prompt('Enter your Google email for demo authentication:', 'google.developer@acme.com');
             if (!email) return;
             const res = await fetch('/api/v1/auth/demo-login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email, name: email.split('@')[0] })
+                body: JSON.stringify({ email: email.trim(), name: email.split('@')[0] })
+            });
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                alert('Sign in failed.');
+            }
+        }
+
+        // Email Login Submit
+        async function handleEmailLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('login_email').value.trim();
+            const btn = document.getElementById('emailLoginBtn');
+            const statusDiv = document.getElementById('authStatus');
+
+            if (!email) return;
+
+            btn.disabled = true;
+            btn.innerText = 'Signing in...';
+
+            try {
+                const res = await fetch('/api/v1/auth/demo-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, name: email.split('@')[0] })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    statusDiv.className = 'connection-status error';
+                    statusDiv.innerText = data.error || 'Failed to sign in.';
+                    btn.disabled = false;
+                    btn.innerText = 'Sign In with Email →';
+                }
+            } catch (err) {
+                statusDiv.className = 'connection-status error';
+                statusDiv.innerText = 'Error: ' + err.message;
+                btn.disabled = false;
+                btn.innerText = 'Sign In with Email →';
+            }
+        }
+
+        // Quick Demo Login (1-Click)
+        async function handleQuickDemoLogin() {
+            const res = await fetch('/api/v1/auth/demo-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: 'sre.lead@production.internal', name: 'Alex Rivera (SRE Lead)' })
             });
             if (res.ok) {
                 window.location.reload();
             }
         }
 
-        // Logout
+        // Sign Out
         async function handleLogout() {
             await fetch('/api/v1/auth/logout', { method: 'POST' });
-            window.location.reload();
+            window.location.href = '/';
         }
 
-        // Project Modal
-        function openCreateProjectModal() {
-            document.getElementById('createProjectModal').style.display = 'flex';
-        }
-
-        function closeCreateProjectModal() {
-            document.getElementById('createProjectModal').style.display = 'none';
-        }
-
+        // Switch Project
         function switchProject(projectId) {
             window.location.href = '/?project_id=' + encodeURIComponent(projectId);
         }
 
+        // Copy Webhook URL (FIXED: Clean template string with zero syntax error)
         function copyWebhookUrl(projectId) {
             const url = window.location.origin + '/api/v1/projects/' + projectId + '/alert';
-            navigator.clipboard.writeText(url);
-            alert('Webhook URL copied to clipboard!
-
-Configure your Sentry, Datadog, or CloudWatch alerts to send POST requests to:
-' + url);
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = document.getElementById('copyWebhookBtn');
+                if (btn) {
+                    const originalText = btn.innerText;
+                    btn.innerText = '✓ Copied!';
+                    setTimeout(() => { btn.innerText = originalText; }, 2000);
+                }
+                showToast('✓ Webhook URL copied to clipboard!');
+            }).catch(err => {
+                alert('Webhook URL:\n' + url);
+            });
         }
 
-        // Test Connection in Modal
+        // Test Connection in Project Modal
         async function testNewProjectConnection() {
             const statusDiv = document.getElementById('createProjectStatus');
             const token = document.getElementById('cp_token').value.trim();
             const owner = document.getElementById('cp_owner').value.trim();
             const repo = document.getElementById('cp_repo').value.trim();
+            const btn = document.getElementById('testConnBtn');
 
             if (!token || !owner || !repo) {
                 statusDiv.className = 'connection-status error';
-                statusDiv.innerText = 'Please provide Token, Owner, and Repository name.';
+                statusDiv.innerText = 'Please provide GitHub Token, Owner, and Repository name.';
                 return;
             }
 
             statusDiv.className = 'connection-status';
             statusDiv.style.display = 'block';
-            statusDiv.innerText = 'Validating credentials against GitHub API...';
+            statusDiv.innerText = 'Validating credentials with GitHub API...';
+            btn.disabled = true;
 
             try {
                 const res = await fetch('/api/v1/user/test-github', {
@@ -1027,12 +1321,17 @@ Configure your Sentry, Datadog, or CloudWatch alerts to send POST requests to:
             } catch (err) {
                 statusDiv.className = 'connection-status error';
                 statusDiv.innerText = '✕ ' + err.message;
+            } finally {
+                btn.disabled = false;
             }
         }
 
         // Submit Project Creation
         async function handleCreateProject(event) {
             event.preventDefault();
+            const btn = document.getElementById('createProjSubmitBtn');
+            const statusDiv = document.getElementById('createProjectStatus');
+
             const payload = {
                 name: document.getElementById('cp_name').value.trim(),
                 github_owner: document.getElementById('cp_owner').value.trim(),
@@ -1041,6 +1340,9 @@ Configure your Sentry, Datadog, or CloudWatch alerts to send POST requests to:
                 github_workflow_id: document.getElementById('cp_workflow').value.trim(),
                 target_service_url: document.getElementById('cp_health_url').value.trim()
             };
+
+            btn.disabled = true;
+            btn.innerText = 'Creating project...';
 
             try {
                 const res = await fetch('/api/v1/projects', {
@@ -1051,27 +1353,69 @@ Configure your Sentry, Datadog, or CloudWatch alerts to send POST requests to:
                 const data = await res.json();
                 if (res.ok) {
                     closeCreateProjectModal();
+                    showToast('✓ Project created successfully!');
                     window.location.href = '/?project_id=' + data.project.id;
                 } else {
-                    alert('Error creating project: ' + (data.error || 'Failed'));
+                    statusDiv.className = 'connection-status error';
+                    statusDiv.innerText = 'Error: ' + (data.error || 'Failed to create project.');
+                    btn.disabled = false;
+                    btn.innerText = 'Create Project';
                 }
             } catch (err) {
-                alert('Request failed: ' + err.message);
+                statusDiv.className = 'connection-status error';
+                statusDiv.innerText = 'Request error: ' + err.message;
+                btn.disabled = false;
+                btn.innerText = 'Create Project';
             }
         }
 
         // Trigger simulation on active project
         async function triggerProjectSimulation(projectId) {
+            const btn = document.getElementById('simulateBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = 'Simulating crash...';
+            }
+
             try {
                 const res = await fetch('/api/v1/projects/' + projectId + '/simulate', { method: 'POST' });
                 const data = await res.json();
                 if (res.ok) {
-                    window.location.reload();
+                    showToast('✓ Simulation executed!');
+                    setTimeout(() => { window.location.reload(); }, 600);
                 } else {
                     alert('Simulation error: ' + (data.error || 'Failed'));
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerText = '⚡ Test Crash Simulation';
+                    }
                 }
             } catch (err) {
                 alert('Simulation request failed: ' + err.message);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = '⚡ Test Crash Simulation';
+                }
+            }
+        }
+
+        // Delete Project
+        async function deleteCurrentProject(projectId, projectName) {
+            if (!confirm(`Are you sure you want to delete "${projectName}"? This will remove all its incident data.`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/v1/projects/' + projectId, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast('Project deleted.');
+                    window.location.href = '/';
+                } else {
+                    const data = await res.json();
+                    alert('Failed to delete project: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('Delete request failed: ' + err.message);
             }
         }
 
@@ -1082,8 +1426,8 @@ Configure your Sentry, Datadog, or CloudWatch alerts to send POST requests to:
                 const res = await fetch(`/api/v1/incident/${incidentId}/manual-rollback`, { method: 'POST' });
                 const data = await res.json();
                 if (res.ok) {
-                    alert(data.message || 'Rollback triggered');
-                    window.location.reload();
+                    showToast('✓ Rollback dispatched!');
+                    setTimeout(() => { window.location.reload(); }, 1000);
                 } else {
                     alert('Rollback error: ' + (data.error || 'Failed'));
                 }

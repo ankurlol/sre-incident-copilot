@@ -335,7 +335,8 @@ async def simulate_project_incident(project_id: str, request: Request):
         return JSONResponse(status_code=404, content={"error": "Project not found."})
 
     user = UserRepository.get_user_by_id(project["user_id"])
-    user_token = project["has_github_token"] and project.get("github_token") or (user.get("github_token") if user else None)
+    project_token = ProjectRepository.get_project_raw_token(project["id"])
+    user_token = project_token or (user.get("github_token") if user else None)
 
     user_config = {
         "github_token": user_token,
@@ -369,7 +370,8 @@ async def project_alert_webhook(project_id: str, payload: AlertPayload):
         return JSONResponse(status_code=404, content={"error": "Monitored project not found."})
 
     user = UserRepository.get_user_by_id(project["user_id"])
-    user_token = project.get("github_token") or (user.get("github_token") if user else None)
+    project_token = ProjectRepository.get_project_raw_token(project["id"])
+    user_token = project_token or (user.get("github_token") if user else None)
 
     user_config = {
         "github_token": user_token,
