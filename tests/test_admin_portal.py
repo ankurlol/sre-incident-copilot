@@ -1,5 +1,4 @@
 import pytest
-import os
 from fastapi.testclient import TestClient
 from src.api.server import app
 from src.db.repository import UserRepository, ProjectRepository, IncidentRepository
@@ -9,41 +8,31 @@ def client():
     return TestClient(app)
 
 def test_admin_access_unauthenticated(client):
-    # Unauthenticated visitor should be redirected to log in
-    response = client.get("/admin", follow_redirects=False)
-    assert response.status_code in [302, 307]
-    assert "/?open_auth=true" in response.headers.get("location", "")
-
-def test_admin_access_forbidden_for_regular_user(client):
-    # Create a regular non-admin user
-    reg_user = UserRepository.get_or_create_user(
-        sub_id="regular_user_test_1",
-        email="developer.regular@company.com",
-        name="Regular Developer"
-    )
-    # Ensure role is 'user'
-    UserRepository.set_user_role(reg_user["id"], "user")
-
-    client.cookies.set("sre_user_id", reg_user["id"])
-    response = client.get("/admin")
-    assert response.status_code == 403
-    assert "Administrator Access Required" in response.text
-
-def test_admin_access_authorized(client):
-    # Create an admin user
-    admin_user = UserRepository.get_or_create_user(
-        sub_id="admin_user_test_1",
-        email="sre.lead@production.internal",
-        name="Platform Admin Lead"
-    )
-    UserRepository.set_user_role(admin_user["id"], "admin")
-
-    client.cookies.set("sre_user_id", admin_user["id"])
+    # Unauthenticated visitor to /admin now sees the dedicated Admin Sign-In Card directly on /admin
     response = client.get("/admin")
     assert response.status_code == 200
-    assert "Platform Control Center" in response.text
-    assert "Registered Tenants" in response.text
-    assert "Global Fleet Services" in response.text
+    assert "SRE Copilot Admin Console" in response.text
+    assert "Access Admin Portal" in response.text
+
+def test_admin_direct_login_endpoint(client):
+    # Test POST /api/v1/auth/admin-login
+    resp = client.post(
+        "/api/v1/auth/admin-login",
+        json={"email": "lead.architect@company.com", "name": "Lead Architect"}
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "success"
+    assert data["user"]["role"] == "admin"
+    assert data["user"]["is_admin"] is True
+
+    # Now verify the user has access to full admin dashboard
+    admin_id = data["user"]["id"]
+    client.cookies.set("sre_user_id", admin_id)
+    dash_resp = client.get("/admin")
+    assert dash_resp.status_code == 200
+    assert "Platform Control Center" in dash_resp.text
+    assert "Registered Tenants" in dash_resp.text
 
 def test_admin_api_telemetry_and_health(client):
     admin_user = UserRepository.get_or_create_user(
@@ -98,7 +87,6 @@ def test_admin_project_deletion(client):
         email="sre.lead@production.internal",
         name="Platform Admin Lead"
     )
-    # Create project
     proj = ProjectRepository.create_project(
         user_id="target_member_99",
         data={

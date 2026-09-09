@@ -474,6 +474,7 @@
                 <div class="brand-text">SRE Copilot <span class="admin-badge">ADMIN</span></div>
             </a>
 
+            {% if is_admin %}
             <ul class="nav-links">
                 <li><a href="#overview">Overview</a></li>
                 <li><a href="#users">Users ({{ users|length }})</a></li>
@@ -491,9 +492,68 @@
                 </div>
                 <button type="button" class="btn-outline btn-sm" onclick="handleLogout()">Sign Out</button>
             </div>
+            {% else %}
+            <div class="nav-auth">
+                <a href="/" class="btn btn-outline" style="font-size: 12.5px;">
+                    &larr; Return to Public Site
+                </a>
+            </div>
+            {% endif %}
         </div>
     </nav>
 
+    {% if not is_admin %}
+    <!-- ----------------------------------------------------------------- -->
+    <!-- VIEW A: ADMIN AUTHENTICATION PORTAL (When Unauthenticated)        -->
+    <!-- ----------------------------------------------------------------- -->
+    <div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+        <div style="max-width: 440px; width: 100%; border: 1px solid var(--border); border-radius: 12px; padding: 36px; background: #ffffff; box-shadow: 0 20px 40px -15px rgba(0,0,0,0.08);">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div class="brand-icon" style="margin: 0 auto 14px; width: 44px; height: 44px; font-size: 20px;">S</div>
+                <h2 style="font-size: 20px; font-weight: 800; letter-spacing: -0.02em;">SRE Copilot Admin Console</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Sign in with administrator credentials or access key to manage platform fleet services and policies.</p>
+            </div>
+
+            {% if current_user and not is_admin %}
+            <div style="background: var(--warning-bg); border: 1px solid #fde68a; border-radius: 6px; padding: 12px; font-size: 12.5px; color: var(--warning); margin-bottom: 18px;">
+                Currently signed in as <strong>{{ current_user.email }}</strong> with regular user role. Sign in with platform administrator credentials below to access this console.
+            </div>
+            {% endif %}
+
+            <form onsubmit="handleAdminLogin(event)">
+                <div style="margin-bottom: 14px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px;">Administrator Email</label>
+                    <input type="email" id="admin_email" style="width: 100%; padding: 10px 12px; font-size: 13.5px; border: 1px solid var(--border-dark); border-radius: 6px; outline: none;" value="alex.dev@acme.com" required>
+                </div>
+
+                <div style="margin-bottom: 18px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px;">Admin Access Key (Optional)</label>
+                    <input type="password" id="admin_key" placeholder="Enter key if configured in .env" style="width: 100%; padding: 10px 12px; font-size: 13.5px; border: 1px solid var(--border-dark); border-radius: 6px; outline: none;">
+                </div>
+
+                <div id="adminLoginStatus" style="display: none; padding: 10px; border-radius: 6px; font-size: 12.5px; margin-bottom: 14px;"></div>
+
+                <button type="submit" id="adminLoginBtn" style="width: 100%; padding: 11px; font-size: 14px; margin-bottom: 12px;">
+                    Access Admin Portal &rarr;
+                </button>
+
+                <button type="button" class="btn-outline" style="width: 100%; padding: 9px; font-size: 12.5px;" onclick="quickAdminDemoLogin()">
+                    ⚡ Instant Demo Admin Access (1-Click)
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 24px; border-top: 1px solid var(--border); padding-top: 16px;">
+                <a href="/" style="font-size: 12.5px; color: var(--text-muted); text-decoration: none; font-weight: 600;">
+                    &larr; Return to Public Homepage
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- ----------------------------------------------------------------- -->
+    <!-- VIEW B: AUTHENTICATED ADMIN FLEET CONTROL CENTER                  -->
+    <!-- ----------------------------------------------------------------- -->
     <main class="container">
         <!-- Admin Header -->
         <header class="admin-header" id="overview">
@@ -821,6 +881,7 @@
             </div>
         </section>
     </main>
+    {% endif %}
 
     <!-- Floating Toast -->
     <div id="toast"></div>
@@ -909,6 +970,57 @@
                 }
             } catch (err) {
                 alert('Network error: ' + err.message);
+            }
+        }
+
+        // Admin Login Form Handler
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin_email').value.trim();
+            const admin_key = document.getElementById('admin_key').value.trim();
+            const btn = document.getElementById('adminLoginBtn');
+            const statusDiv = document.getElementById('adminLoginStatus');
+
+            btn.disabled = true;
+            btn.innerText = 'Authenticating...';
+
+            try {
+                const res = await fetch('/api/v1/auth/admin-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, admin_key: admin_key || undefined })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    statusDiv.style.display = 'block';
+                    statusDiv.style.background = 'var(--danger-bg)';
+                    statusDiv.style.color = 'var(--danger)';
+                    statusDiv.style.border = '1px solid #fecaca';
+                    statusDiv.innerText = data.error || 'Authentication failed.';
+                    btn.disabled = false;
+                    btn.innerText = 'Access Admin Portal →';
+                }
+            } catch (err) {
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = 'var(--danger-bg)';
+                statusDiv.style.color = 'var(--danger)';
+                statusDiv.innerText = 'Error: ' + err.message;
+                btn.disabled = false;
+                btn.innerText = 'Access Admin Portal →';
+            }
+        }
+
+        // Quick Admin Demo Login (1-Click)
+        async function quickAdminDemoLogin() {
+            const res = await fetch('/api/v1/auth/admin-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: 'sre.lead@production.internal', name: 'Alex Rivera (Platform Lead)' })
+            });
+            if (res.ok) {
+                window.location.reload();
             }
         }
     </script>

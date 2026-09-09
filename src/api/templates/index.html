@@ -1440,6 +1440,13 @@
                 alert('Network error: ' + e.message);
             }
         }
+        // Auto-open Auth Modal if open_auth=true in URL
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('open_auth') === 'true') {
+                openAuthModal();
+            }
+        });
     </script>
 </body>
 </html>
