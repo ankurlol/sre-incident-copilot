@@ -216,8 +216,8 @@ async def dashboard(request: Request):
         )
 
     # If authenticated, check and update admin role if applicable
-    admin_email = os.getenv("ADMIN_EMAIL", "alex.dev@acme.com").strip().lower()
-    is_admin = (current_user.get("role") == "admin") or (current_user.get("email", "").lower() in [admin_email, "sre.lead@production.internal"])
+    admin_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
+    is_admin = (current_user.get("role") == "admin") or (bool(admin_email) and current_user.get("email", "").lower() == admin_email)
     if is_admin and current_user.get("role") != "admin":
         UserRepository.set_user_role(current_user["id"], "admin")
         current_user["role"] = "admin"
@@ -417,7 +417,9 @@ async def verify_otp(payload: OTPVerifyPayload, response: Response):
 
 @app.post("/api/v1/auth/demo-login")
 async def demo_login(payload: DemoLoginPayload, response: Response):
-    email = (payload.email or "alex.dev@acme.com").strip().lower()
+    email = (payload.email or "").strip().lower()
+    if not email:
+        return JSONResponse(status_code=400, content={"error": "Email is required."})
     sub_id = f"demo_{hashlib.md5(email.encode()).hexdigest()[:10]}"
     name = payload.name or email.split("@")[0]
     user = UserRepository.get_or_create_user(

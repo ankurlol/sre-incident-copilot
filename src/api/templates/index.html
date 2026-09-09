@@ -1235,18 +1235,12 @@
         }
 
         // Fallback when Google Client ID is not configured
-        async function handleGoogleSignInFallback() {
-            const email = prompt('Enter your Google email for demo authentication:', 'google.developer@acme.com');
-            if (!email) return;
-            const res = await fetch('/api/v1/auth/demo-login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email.trim(), name: email.split('@')[0] })
-            });
-            if (res.ok) {
-                window.location.reload();
-            } else {
-                alert('Sign in failed.');
+        function handleGoogleSignInFallback() {
+            showToast('Google OAuth client ID not set in .env. Please use the Email OTP verification below.', 4000);
+            const input = document.getElementById('login_email');
+            if (input) {
+                input.focus();
+                input.scrollIntoView({ behavior: 'smooth' });
             }
         }
 

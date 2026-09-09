@@ -104,7 +104,7 @@ class OTPService:
         smtp_port = int(os.getenv("SMTP_PORT", "587"))
 
         if not smtp_user or not smtp_pass:
-            logger.info(f"[AUTH OTP MOCK] SMTP not configured. OTP for {recipient}: {code}")
+            logger.info(f"[AUTH OTP] SMTP not configured. Generated verification code for {recipient}: {code}")
             return False
 
         try:
