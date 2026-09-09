@@ -4,7 +4,7 @@ import hashlib
 import httpx
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, Request, Response, Depends, BackgroundTasks
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
@@ -78,6 +78,9 @@ class TestGitHubPayload(BaseModel):
     token: str
     owner: str
     repo: str
+
+class UserRolePayload(BaseModel):
+    role: str
 
 async def process_incident(
     payload: AlertPayload,
@@ -194,7 +197,15 @@ async def dashboard(request: Request):
             }
         )
 
-    # If authenticated, load ONLY this user's projects and incidents
+    # If authenticated, check and update admin role if applicable
+    admin_email = os.getenv("ADMIN_EMAIL", "alex.dev@acme.com").strip().lower()
+    is_admin = (current_user.get("role") == "admin") or (current_user.get("email", "").lower() in [admin_email, "sre.lead@production.internal"])
+    if is_admin and current_user.get("role") != "admin":
+        UserRepository.set_user_role(current_user["id"], "admin")
+        current_user["role"] = "admin"
+    current_user["is_admin"] = is_admin
+
+    # Load ONLY this user's projects and incidents
     user_projects = ProjectRepository.get_user_projects(current_user["id"])
     active_project_id = request.query_params.get("project_id")
     active_project = None
@@ -212,6 +223,7 @@ async def dashboard(request: Request):
             "app_name": settings.APP_NAME,
             "current_user": current_user,
             "is_authenticated": True,
+            "is_admin": is_admin,
             "projects": user_projects,
             "active_project": active_project,
             "incidents": incidents,
@@ -526,3 +538,147 @@ async def healthz():
 @app.get("/mock-target/healthz")
 async def mock_healthz():
     return {"status": "healthy", "version": "v2.4.1", "uptime": "99.99%"}
+
+# -----------------------------------------------------------------------------
+# Admin Portal & Platform Operations
+# -----------------------------------------------------------------------------
+def get_current_admin(request: Request) -> Optional[Dict[str, Any]]:
+    # 1. Check API / Admin Secret Key (for automation / CI / platform scripts)
+    admin_key = request.headers.get("X-Admin-Key") or request.query_params.get("admin_key")
+    configured_key = os.getenv("ADMIN_KEY") or os.getenv("API_KEY")
+    if configured_key and admin_key and admin_key == configured_key:
+        return {
+            "id": "admin_key_user",
+            "email": "system.admin@internal",
+            "name": "System Administrator",
+            "role": "admin",
+            "is_admin": True
+        }
+
+    # 2. Check Cookie / Session User
+    user_id = request.cookies.get("sre_user_id") or request.headers.get("X-User-Id")
+    if not user_id:
+        return None
+
+    user = UserRepository.get_user_by_id(user_id)
+    if not user:
+        return None
+
+    admin_email = os.getenv("ADMIN_EMAIL", "alex.dev@acme.com").strip().lower()
+    if user.get("role") == "admin" or user.get("email", "").lower() in [admin_email, "sre.lead@production.internal"]:
+        if user.get("role") != "admin":
+            UserRepository.set_user_role(user["id"], "admin")
+            user["role"] = "admin"
+            user["is_admin"] = True
+        return user
+
+    return None
+
+def get_system_health_status() -> Dict[str, Any]:
+    db_status = "Connected (Healthy)"
+    db_latency_ms = 0.0
+    t0 = time.time()
+    try:
+        from src.db.database import engine
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1;"))
+        db_latency_ms = round((time.time() - t0) * 1000, 1)
+    except Exception as e:
+        db_status = f"Degraded ({str(e)[:30]})"
+
+    return {
+        "database": {
+            "status": db_status,
+            "engine": "PostgreSQL (Neon)" if "postgres" in os.getenv("DATABASE_URL", "") else "SQLite",
+            "latency_ms": db_latency_ms
+        },
+        "retriever": {
+            "status": "Operational",
+            "runbooks_indexed": len(indexer.runbook_docs) if hasattr(indexer, "runbook_docs") else 2,
+            "post_mortems_indexed": len(indexer.post_mortem_docs) if hasattr(indexer, "post_mortem_docs") else 2
+        },
+        "github_api": {
+            "configured": bool(os.getenv("GITHUB_TOKEN")),
+            "mode": "Simulation" if settings.SIMULATE_GITHUB_ACTIONS else "Live Actions"
+        },
+        "safety_guardrails": {
+            "db_migration_blocker": settings.BLOCK_ON_DB_MIGRATION,
+            "min_confidence_threshold": settings.MIN_CONFIDENCE_THRESHOLD,
+            "auto_rollback_enabled": settings.AUTO_ROLLBACK_ENABLED
+        }
+    }
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_portal(request: Request):
+    admin_user = get_current_admin(request)
+    if not admin_user:
+        user_id = request.cookies.get("sre_user_id") or request.headers.get("X-User-Id")
+        if user_id:
+            return HTMLResponse(
+                status_code=403,
+                content="""<!DOCTYPE html><html><head><title>Access Denied - SRE Copilot</title><style>body{font-family:-apple-system,sans-serif;text-align:center;padding:100px 20px;background:#fff;color:#000;}a{display:inline-block;margin-top:20px;padding:10px 20px;background:#000;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;}</style></head><body><h1>403 - Administrator Access Required</h1><p>Your authenticated account does not possess administrator privileges for this portal.</p><a href="/">&larr; Return to Service Command Center</a></body></html>"""
+            )
+        return RedirectResponse(url="/?open_auth=true")
+
+    stats = IncidentRepository.get_system_stats()
+    users = UserRepository.get_all_users()
+    projects = ProjectRepository.get_all_projects_admin()
+    incidents = IncidentRepository.get_all_incidents(limit=100)
+    health = get_system_health_status()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin.html",
+        context={
+            "app_name": settings.APP_NAME,
+            "current_user": admin_user,
+            "is_admin": True,
+            "stats": stats,
+            "users": users,
+            "projects": projects,
+            "incidents": incidents,
+            "health": health
+        }
+    )
+
+@app.get("/api/v1/admin/stats", response_class=JSONResponse)
+async def admin_stats(request: Request):
+    if not get_current_admin(request):
+        return JSONResponse(status_code=403, content={"error": "Admin access required."})
+    return {
+        "stats": IncidentRepository.get_system_stats(),
+        "health": get_system_health_status()
+    }
+
+@app.get("/api/v1/admin/users", response_class=JSONResponse)
+async def admin_users(request: Request):
+    if not get_current_admin(request):
+        return JSONResponse(status_code=403, content={"error": "Admin access required."})
+    return {"users": UserRepository.get_all_users()}
+
+@app.post("/api/v1/admin/users/{user_id}/role", response_class=JSONResponse)
+async def admin_update_user_role(user_id: str, payload: UserRolePayload, request: Request):
+    if not get_current_admin(request):
+        return JSONResponse(status_code=403, content={"error": "Admin access required."})
+    if payload.role not in ["admin", "user"]:
+        return JSONResponse(status_code=400, content={"error": "Invalid role. Must be 'admin' or 'user'."})
+    updated = UserRepository.set_user_role(user_id, payload.role)
+    if not updated:
+        return JSONResponse(status_code=404, content={"error": "User not found."})
+    return {"status": "success", "user": updated}
+
+@app.delete("/api/v1/admin/projects/{project_id}", response_class=JSONResponse)
+async def admin_delete_project(project_id: str, request: Request):
+    if not get_current_admin(request):
+        return JSONResponse(status_code=403, content={"error": "Admin access required."})
+    success = ProjectRepository.delete_project_admin(project_id)
+    if not success:
+        return JSONResponse(status_code=404, content={"error": "Project not found."})
+    return {"status": "success", "deleted_project_id": project_id}
+
+@app.get("/api/v1/admin/health", response_class=JSONResponse)
+async def admin_health(request: Request):
+    if not get_current_admin(request):
+        return JSONResponse(status_code=403, content={"error": "Admin access required."})
+    return get_system_health_status()

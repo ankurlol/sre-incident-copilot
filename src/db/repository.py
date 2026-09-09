@@ -1,12 +1,22 @@
+import os
 import uuid
 import re
 from typing import List, Optional, Dict, Any
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from src.db.models import IncidentModel, UserModel, ProjectModel
 from src.db.database import Base, engine, SessionLocal
 
 # Initialize tables (auto-provisions projects, users, incidents)
 Base.metadata.create_all(bind=engine)
+
+# Safe auto-migration for role column if table already existed
+try:
+    with engine.connect() as conn:
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'user';"))
+        conn.commit()
+except Exception:
+    pass
 
 class ProjectRepository:
     @staticmethod
@@ -74,6 +84,36 @@ class ProjectRepository:
         db = SessionLocal()
         try:
             p = db.query(ProjectModel).filter(ProjectModel.id == project_id, ProjectModel.user_id == user_id).first()
+            if p:
+                db.delete(p)
+                db.commit()
+                return True
+            return False
+        finally:
+            db.close()
+
+    @staticmethod
+    def get_all_projects_admin() -> List[Dict[str, Any]]:
+        db = SessionLocal()
+        try:
+            projects = db.query(ProjectModel).order_by(ProjectModel.created_at.desc()).all()
+            results = []
+            for p in projects:
+                d = ProjectRepository._to_dict(p)
+                user = db.query(UserModel).filter(UserModel.id == p.user_id).first()
+                d["owner_name"] = user.name if user else "Unknown"
+                d["owner_email"] = user.email if user else "Unknown"
+                d["incident_count"] = db.query(IncidentModel).filter(IncidentModel.project_id == p.id).count()
+                results.append(d)
+            return results
+        finally:
+            db.close()
+
+    @staticmethod
+    def delete_project_admin(project_id: str) -> bool:
+        db = SessionLocal()
+        try:
+            p = db.query(ProjectModel).filter(ProjectModel.id == project_id).first()
             if p:
                 db.delete(p)
                 db.commit()
@@ -165,11 +205,50 @@ class IncidentRepository:
             db.close()
 
     @staticmethod
-    def get_all_incidents(limit: int = 50) -> List[Dict[str, Any]]:
+    def get_all_incidents(severity: Optional[str] = None, status: Optional[str] = None, limit: int = 100) -> List[Dict[str, Any]]:
         db = SessionLocal()
         try:
-            records = db.query(IncidentModel).order_by(IncidentModel.timestamp.desc()).limit(limit).all()
+            query = db.query(IncidentModel)
+            if severity and severity != "ALL":
+                query = query.filter(IncidentModel.severity == severity)
+            if status and status != "ALL":
+                query = query.filter(IncidentModel.status == status)
+            records = query.order_by(IncidentModel.timestamp.desc()).limit(limit).all()
             return [IncidentRepository._record_to_dict(r) for r in records]
+        finally:
+            db.close()
+
+    @staticmethod
+    def get_system_stats() -> Dict[str, Any]:
+        db = SessionLocal()
+        try:
+            total_users = db.query(UserModel).count()
+            total_projects = db.query(ProjectModel).count()
+            total_incidents = db.query(IncidentModel).count()
+            resolved = db.query(IncidentModel).filter(IncidentModel.status == "RESOLVED").count()
+            needs_review = db.query(IncidentModel).filter(IncidentModel.status == "NEEDS_REVIEW").count()
+            guardrail_passed = db.query(IncidentModel).filter(IncidentModel.guardrail_passed == True).count()
+            guardrail_blocked = db.query(IncidentModel).filter(IncidentModel.guardrail_passed == False).count()
+            rollbacks = db.query(IncidentModel).filter(IncidentModel.rollback_status != None).count()
+
+            incidents = db.query(IncidentModel).all()
+            avg_confidence = 0.0
+            if incidents:
+                scores = [inc.confidence_score for inc in incidents if inc.confidence_score is not None]
+                avg_confidence = round((sum(scores) / len(scores)) * 100, 1) if scores else 0.0
+
+            return {
+                "total_users": total_users,
+                "total_projects": total_projects,
+                "total_incidents": total_incidents,
+                "resolved_incidents": resolved,
+                "needs_review_incidents": needs_review,
+                "resolution_rate": round((resolved / total_incidents * 100) if total_incidents > 0 else 100.0, 1),
+                "guardrail_passed_count": guardrail_passed,
+                "guardrail_blocked_count": guardrail_blocked,
+                "rollbacks_count": rollbacks,
+                "avg_confidence": avg_confidence
+            }
         finally:
             db.close()
 
@@ -228,11 +307,17 @@ class UserRepository:
         try:
             user = db.query(UserModel).filter((UserModel.id == sub_id) | (UserModel.email == email)).first()
             if not user:
+                total_users = db.query(UserModel).count()
+                admin_email = os.getenv("ADMIN_EMAIL", "alex.dev@acme.com").strip().lower()
+                is_initial_admin = (total_users == 0) or (email.strip().lower() in [admin_email, "sre.lead@production.internal"])
+                role = "admin" if is_initial_admin else "user"
+
                 user = UserModel(
                     id=sub_id,
                     email=email,
                     name=name,
-                    picture=picture
+                    picture=picture,
+                    role=role
                 )
                 db.add(user)
                 db.commit()
@@ -255,6 +340,37 @@ class UserRepository:
         try:
             user = db.query(UserModel).filter(UserModel.id == user_id).first()
             return UserRepository._to_dict(user) if user else None
+        finally:
+            db.close()
+
+    @staticmethod
+    def get_all_users() -> List[Dict[str, Any]]:
+        db = SessionLocal()
+        try:
+            users = db.query(UserModel).order_by(UserModel.created_at.desc()).all()
+            results = []
+            for u in users:
+                d = UserRepository._to_dict(u)
+                d["project_count"] = db.query(ProjectModel).filter(ProjectModel.user_id == u.id).count()
+                d["incident_count"] = db.query(IncidentModel).filter(IncidentModel.user_id == u.id).count()
+                results.append(d)
+            return results
+        finally:
+            db.close()
+
+    @staticmethod
+    def set_user_role(user_id: str, new_role: str) -> Optional[Dict[str, Any]]:
+        if new_role not in ["admin", "user"]:
+            return None
+        db = SessionLocal()
+        try:
+            user = db.query(UserModel).filter(UserModel.id == user_id).first()
+            if not user:
+                return None
+            user.role = new_role
+            db.commit()
+            db.refresh(user)
+            return UserRepository._to_dict(user)
         finally:
             db.close()
 
@@ -295,11 +411,15 @@ class UserRepository:
         if user.github_token:
             masked_token = "****" + (user.github_token[-4:] if len(user.github_token) > 4 else "")
 
+        role = getattr(user, "role", "user") or "user"
+
         return {
             "id": user.id,
             "email": user.email,
             "name": user.name,
             "picture": user.picture,
+            "role": role,
+            "is_admin": (role == "admin"),
             "created_at": user.created_at,
             "has_github_token": bool(user.github_token),
             "github_token_masked": masked_token,

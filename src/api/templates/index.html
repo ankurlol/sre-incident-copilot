@@ -722,6 +722,11 @@
                     {% endif %}
                     <span>{{ current_user.name }}</span>
                 </div>
+                {% if is_admin or (current_user and current_user.is_admin) %}
+                <a href="/admin" class="btn btn-outline" style="font-size: 12.5px;">
+                    ⚙️ Admin Portal
+                </a>
+                {% endif %}
                 <button type="button" onclick="openCreateProjectModal()">+ New Project</button>
                 <button type="button" class="btn-outline" onclick="handleLogout()">Sign Out</button>
             </div>

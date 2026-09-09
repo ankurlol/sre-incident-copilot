@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }} - Enterprise Admin Portal</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #ffffff;
+            --surface-subtle: #f8fafc;
+            --surface-card: #fdfdfd;
+            --text-main: #09090b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --border-dark: #cbd5e1;
+            --btn-bg: #000000;
+            --btn-text: #ffffff;
+            --btn-hover: #27272a;
+            --danger: #dc2626;
+            --danger-bg: #fef2f2;
+            --warning: #d97706;
+            --warning-bg: #fffbeb;
+            --success: #16a34a;
+            --success-bg: #f0fdf4;
+            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font);
+            background-color: #ffffff !important;
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 0;
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Top Navigation Bar */
+        nav.navbar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 68px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .brand-icon {
+            width: 34px;
+            height: 34px;
+            background: #000000;
+            color: #ffffff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        .brand-text {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .admin-badge {
+            background: #000000;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 4px;
+            font-family: var(--font-mono);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: color 0.15s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-main);
+        }
+
+        .nav-auth {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Buttons */
+        button, .btn {
+            font-family: var(--font);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid #000000;
+            background: #000000 !important;
+            color: #ffffff !important;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        button:hover, .btn:hover {
+            background: #27272a !important;
+            border-color: #27272a;
+        }
+
+        button.btn-outline, .btn.btn-outline {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid var(--border-dark);
+        }
+
+        button.btn-outline:hover, .btn.btn-outline:hover {
+            background: #f4f4f5 !important;
+            border-color: #000000;
+        }
+
+        button.btn-sm, .btn.btn-sm {
+            padding: 5px 10px;
+            font-size: 11.5px;
+            border-radius: 4px;
+        }
+
+        button.btn-danger-outline {
+            background: #ffffff !important;
+            color: var(--danger) !important;
+            border: 1px solid #fecaca;
+        }
+
+        button.btn-danger-outline:hover {
+            background: var(--danger-bg) !important;
+            border-color: var(--danger);
+        }
+
+        .pill-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            background: var(--surface-subtle);
+            border: 1px solid var(--border);
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* Admin Page Header */
+        .admin-header {
+            padding: 32px 0 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .admin-header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .admin-header p {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* KPI / Stat Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 36px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+
+        .stat-sub {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Section Layouts */
+        .admin-section {
+            margin-bottom: 44px;
+        }
+
+        .section-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-heading {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        /* Tables */
+        .table-wrap {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            overflow-x: auto;
+        }
+
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        table.data-table th {
+            background: var(--surface-subtle);
+            padding: 12px 16px;
+            font-weight: 700;
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        table.data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        table.data-table tr:hover td {
+            background: #fafafa;
+        }
+
+        .role-badge {
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-family: var(--font-mono);
+        }
+
+        .role-badge.admin {
+            background: #000000;
+            color: #ffffff;
+        }
+
+        .role-badge.user {
+            background: var(--surface-subtle);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        /* Incident Feed Card in Admin */
+        .incident-card {
+            border: 1px solid var(--border);
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+        }
+
+        .badge.p0, .badge.p1 { background: var(--danger-bg); color: var(--danger); border: 1px solid #fca5a5; }
+        .badge.p2 { background: var(--warning-bg); color: var(--warning); border: 1px solid #fcd34d; }
+        .badge.resolved { background: var(--success-bg); color: var(--success); border: 1px solid #86efac; }
+        .badge.review { background: var(--warning-bg); color: var(--warning); border: 1px solid #fcd34d; }
+
+        .mono { font-family: var(--font-mono); }
+        .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        @media (max-width: 820px) { .grid-2 { grid-template-columns: 1fr; } }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            letter-spacing: 0.04em;
+        }
+
+        .rca-box {
+            background: var(--surface-subtle);
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 13.5px;
+            line-height: 1.6;
+            margin-bottom: 14px;
+        }
+
+        .status-box {
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 12.5px;
+            margin-bottom: 14px;
+            border: 1px solid var(--border);
+        }
+
+        .status-box.passed { background: var(--success-bg); color: #15803d; border-color: #bbf7d0; }
+        .status-box.blocked { background: var(--danger-bg); color: #b91c1c; border-color: #fecaca; }
+
+        /* Diagnostics Grid */
+        .diag-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .diag-card {
+            background: var(--surface-subtle);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 18px;
+        }
+
+        .diag-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .diag-title {
+            font-size: 13.5px;
+            font-weight: 700;
+        }
+
+        .diag-list {
+            list-style: none;
+            font-size: 12.5px;
+        }
+
+        .diag-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .diag-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #000000;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 9999;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/admin" class="nav-brand">
+                <div class="brand-icon">S</div>
+                <div class="brand-text">SRE Copilot <span class="admin-badge">ADMIN</span></div>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#users">Users ({{ users|length }})</a></li>
+                <li><a href="#projects">Services ({{ projects|length }})</a></li>
+                <li><a href="#audit">Audit Feed ({{ incidents|length }})</a></li>
+                <li><a href="#diagnostics">Diagnostics</a></li>
+            </ul>
+
+            <div class="nav-auth">
+                <a href="/" class="btn btn-outline" style="font-size: 12.5px;">
+                    &larr; Switch to User Console
+                </a>
+                <div class="pill-badge" style="gap: 6px;">
+                    <span>{{ current_user.name }}</span>
+                </div>
+                <button type="button" class="btn-outline btn-sm" onclick="handleLogout()">Sign Out</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Admin Header -->
+        <header class="admin-header" id="overview">
+            <div>
+                <h1>Platform Control Center</h1>
+                <p>System-wide observability, user authorization, multi-tenant fleet oversight, and global incident governance.</p>
+            </div>
+            <div>
+                <button type="button" class="btn-outline" onclick="window.location.reload()">
+                    ↻ Refresh Telemetry
+                </button>
+            </div>
+        </header>
+
+        <!-- KPI / Telemetry Counters -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Registered Tenants</div>
+                <div class="stat-value">{{ stats.total_users }}</div>
+                <div class="stat-sub">Active developer accounts</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Monitored Services</div>
+                <div class="stat-value">{{ stats.total_projects }}</div>
+                <div class="stat-sub">Connected GitHub repos</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Total Incidents</div>
+                <div class="stat-value">{{ stats.total_incidents }}</div>
+                <div class="stat-sub">{{ stats.resolved_incidents }} resolved ({{ stats.resolution_rate }}%)</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Rollbacks Executed</div>
+                <div class="stat-value">{{ stats.rollbacks_count }}</div>
+                <div class="stat-sub">Autonomous & manual</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Guardrail Blocked</div>
+                <div class="stat-value">{{ stats.guardrail_blocked_count }}</div>
+                <div class="stat-sub">Destructive DB migrations stopped</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Avg RCA Confidence</div>
+                <div class="stat-value">{{ stats.avg_confidence }}%</div>
+                <div class="stat-sub">Hybrid RAG accuracy</div>
+            </div>
+        </section>
+
+        <!-- User Access Management -->
+        <section class="admin-section" id="users">
+            <div class="section-bar">
+                <h2 class="section-heading">User Accounts & Roles ({{ users|length }})</h2>
+                <div style="font-size: 12.5px; color: var(--text-muted);">Manage platform permissions and tenant ownership</div>
+            </div>
+
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>User ID</th>
+                            <th>Role</th>
+                            <th>Services</th>
+                            <th>Incidents</th>
+                            <th>Registered</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    {% if u.picture %}
+                                    <img src="{{ u.picture }}" style="width: 28px; height: 28px; border-radius: 50%;" alt="Avatar">
+                                    {% else %}
+                                    <div style="width: 28px; height: 28px; border-radius: 50%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">{{ u.name[0] }}</div>
+                                    {% endif %}
+                                    <div>
+                                        <div style="font-weight: 700;">{{ u.name }}</div>
+                                        <div style="font-size: 11.5px; color: var(--text-muted);">{{ u.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="mono" style="font-size: 11.5px;">{{ u.id }}</span></td>
+                            <td>
+                                <span class="role-badge {{ 'admin' if u.role == 'admin' else 'user' }}">{{ u.role }}</span>
+                            </td>
+                            <td><span style="font-weight: 700;">{{ u.project_count }}</span></td>
+                            <td><span style="font-weight: 700;">{{ u.incident_count }}</span></td>
+                            <td><span style="font-size: 12px; color: var(--text-muted);">{{ u.created_at[:10] if u.created_at else 'N/A' }}</span></td>
+                            <td>
+                                {% if u.role == 'admin' %}
+                                <button type="button" class="btn-outline btn-sm" onclick="changeUserRole('{{ u.id }}', 'user')">
+                                    Demote to User
+                                </button>
+                                {% else %}
+                                <button type="button" class="btn-sm" onclick="changeUserRole('{{ u.id }}', 'admin')">
+                                    Promote to Admin
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Global Monitored Services -->
+        <section class="admin-section" id="projects">
+            <div class="section-bar">
+                <h2 class="section-heading">Global Fleet Services ({{ projects|length }})</h2>
+                <div style="font-size: 12.5px; color: var(--text-muted);">Cross-tenant monitored repositories & rollback targets</div>
+            </div>
+
+            {% if not projects %}
+            <div style="text-align: center; padding: 40px 20px; border: 1px dashed var(--border); border-radius: 8px;">
+                <p style="color: var(--text-muted);">No monitored services have been configured yet across any tenants.</p>
+            </div>
+            {% else %}
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Service Name</th>
+                            <th>Owner</th>
+                            <th>GitHub Repo</th>
+                            <th>Rollback Workflow</th>
+                            <th>Incidents</th>
+                            <th>Webhook</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in projects %}
+                        <tr>
+                            <td>
+                                <div style="font-weight: 700;">{{ p.name }}</div>
+                                <div class="mono" style="font-size: 11px; color: var(--text-muted);">{{ p.id }}</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600;">{{ p.owner_name }}</div>
+                                <div style="font-size: 11px; color: var(--text-muted);">{{ p.owner_email }}</div>
+                            </td>
+                            <td>
+                                <a href="https://github.com/{{ p.github_owner }}/{{ p.github_repo }}" target="_blank" style="color: #000; font-weight: 600; text-decoration: underline;" class="mono">
+                                    {{ p.github_owner }}/{{ p.github_repo }}
+                                </a>
+                            </td>
+                            <td><span class="mono" style="font-size: 12px;">{{ p.github_workflow_id }}</span></td>
+                            <td><span style="font-weight: 700;">{{ p.incident_count }}</span></td>
+                            <td>
+                                <button type="button" class="btn-outline btn-sm" onclick="copyWebhook('/api/v1/projects/{{ p.id }}/alert')">
+                                    Copy URL
+                                </button>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 6px;">
+                                    <button type="button" class="btn-sm" onclick="adminSimulateProject('{{ p.id }}')">
+                                        ⚡ Test Crash
+                                    </button>
+                                    <button type="button" class="btn-danger-outline btn-sm" onclick="adminDeleteProject('{{ p.id }}', '{{ p.name }}')">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Global Cross-Tenant Incident Audit Feed -->
+        <section class="admin-section" id="audit">
+            <div class="section-bar">
+                <h2 class="section-heading">Cross-Tenant Incident Audit Feed ({{ incidents|length }})</h2>
+                <div style="font-size: 12.5px; color: var(--text-muted);">Audit log of all processed crash payloads & automated actions</div>
+            </div>
+
+            {% if not incidents %}
+            <div style="text-align: center; padding: 40px 20px; border: 1px dashed var(--border); border-radius: 8px;">
+                <p style="color: var(--text-muted);">Zero incident records in database.</p>
+            </div>
+            {% endif %}
+
+            {% for inc in incidents %}
+            <div class="incident-card">
+                <div class="card-header">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="badge {{ 'p0' if inc.severity == 'P0' else ('p1' if inc.severity == 'P1' else 'p2') }}">{{ inc.severity }}</span>
+                        <span class="mono" style="font-size: 13px; font-weight: 700;">{{ inc.incident_id }}</span>
+                        <span style="font-weight: 700; font-size: 15px;">{{ inc.service_name }}</span>
+                        {% if inc.project_id %}
+                        <span class="mono" style="font-size: 11.5px; color: var(--text-muted);">({{ inc.project_id }})</span>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 13px; color: var(--text-muted);">{{ inc.timestamp }}</span>
+                        <span class="badge {{ 'resolved' if inc.status == 'RESOLVED' else 'review' }}">{{ inc.status }}</span>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div>
+                        <div class="section-label">Root Cause Analysis</div>
+                        <div class="rca-box">{{ inc.rca.root_cause_summary }}</div>
+
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;">
+                            <div style="background: var(--surface-subtle); border: 1px solid var(--border); padding: 8px; border-radius: 6px; font-size: 12px;">
+                                <div class="section-label">Breaking Commit</div>
+                                <div class="mono" style="font-weight: 700;">{{ inc.rca.breaking_commit_sha[:7] if inc.rca.breaking_commit_sha else 'N/A' }}</div>
+                            </div>
+                            <div style="background: var(--surface-subtle); border: 1px solid var(--border); padding: 8px; border-radius: 6px; font-size: 12px;">
+                                <div class="section-label">Author</div>
+                                <div>{{ inc.rca.breaking_author or 'Unknown' }}</div>
+                            </div>
+                            <div style="background: var(--surface-subtle); border: 1px solid var(--border); padding: 8px; border-radius: 6px; font-size: 12px;">
+                                <div class="section-label">Confidence</div>
+                                <div style="font-weight: 700;">{{ '%.0f' | format(inc.rca.confidence_score * 100) }}%</div>
+                            </div>
+                        </div>
+
+                        {% if inc.rca.mitigation_steps %}
+                        <div class="section-label">Recommended Mitigation</div>
+                        <ul style="font-size: 12px; margin-left: 18px; line-height: 1.5;">
+                            {% for step in inc.rca.mitigation_steps %}
+                            <li>{{ step }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <div class="section-label">Guardrail & Rollback Evaluation</div>
+                        <div class="status-box {{ 'passed' if inc.guardrail.passed else 'blocked' }}">
+                            <strong>{{ 'Passed Safety Filters' if inc.guardrail.passed else 'Auto-Rollback Blocked' }}</strong>
+                            <div style="margin-top: 4px;">{{ 'Safe for automated GitHub rollback.' if inc.guardrail.passed else inc.guardrail.blocked_reason }}</div>
+                        </div>
+
+                        {% if inc.rollback %}
+                        <div class="section-label">Remediation Action</div>
+                        <div style="background: var(--surface-subtle); border: 1px solid var(--border); padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 10px;">
+                            <div>Target SHA: <span class="mono" style="font-weight: 700;">{{ inc.rollback.target_sha[:7] if inc.rollback.target_sha else 'N/A' }}</span></div>
+                            <div style="margin-top: 3px; color: var(--text-muted);">{{ inc.rollback.message or 'Completed' }}</div>
+                            {% if inc.health %}
+                            <div style="margin-top: 4px; color: #16a34a; font-weight: 600;">✓ {{ inc.health.message }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if not inc.guardrail.passed and inc.status != 'RESOLVED' %}
+                        <button type="button" style="width: 100%; margin-top: 6px;" onclick="adminManualRollback('{{ inc.incident_id }}')">
+                            Override Guardrail & Trigger Rollback
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+
+        <!-- System Diagnostics Panel -->
+        <section class="admin-section" id="diagnostics">
+            <div class="section-bar">
+                <h2 class="section-heading">Platform Infrastructure Diagnostics</h2>
+                <div style="font-size: 12.5px; color: var(--text-muted);">Real-time status of backend services & external APIs</div>
+            </div>
+
+            <div class="diag-grid">
+                <div class="diag-card">
+                    <div class="diag-header">
+                        <div class="diag-title">PostgreSQL Database</div>
+                        <span class="pill-badge" style="font-size: 11px; background: #f0fdf4; color: #16a34a; border-color: #86efac;">Active</span>
+                    </div>
+                    <ul class="diag-list">
+                        <li><span>Status</span><strong>{{ health.database.status }}</strong></li>
+                        <li><span>Engine</span><strong>{{ health.database.engine }}</strong></li>
+                        <li><span>Latency</span><strong>{{ health.database.latency_ms }} ms</strong></li>
+                    </ul>
+                </div>
+
+                <div class="diag-card">
+                    <div class="diag-header">
+                        <div class="diag-title">Hybrid RAG Knowledge Engine</div>
+                        <span class="pill-badge" style="font-size: 11px; background: #f0fdf4; color: #16a34a; border-color: #86efac;">Active</span>
+                    </div>
+                    <ul class="diag-list">
+                        <li><span>Runbooks Indexed</span><strong>{{ health.retriever.runbooks_indexed }} documents</strong></li>
+                        <li><span>Post-Mortems Indexed</span><strong>{{ health.retriever.post_mortems_indexed }} documents</strong></li>
+                        <li><span>Retrieval Algorithm</span><strong>BM25 + Vector RRF</strong></li>
+                    </ul>
+                </div>
+
+                <div class="diag-card">
+                    <div class="diag-header">
+                        <div class="diag-title">GitHub Automation Engine</div>
+                        <span class="pill-badge" style="font-size: 11px;">{{ health.github_api.mode }}</span>
+                    </div>
+                    <ul class="diag-list">
+                        <li><span>System PAT Configured</span><strong>{{ 'Yes' if health.github_api.configured else 'No (Per-project)' }}</strong></li>
+                        <li><span>Workflow API</span><strong>Actions Dispatch</strong></li>
+                        <li><span>Execution Mode</span><strong>{{ health.github_api.mode }}</strong></li>
+                    </ul>
+                </div>
+
+                <div class="diag-card">
+                    <div class="diag-header">
+                        <div class="diag-title">Safety Guardrail Engine</div>
+                        <span class="pill-badge" style="font-size: 11px; background: #f0fdf4; color: #16a34a; border-color: #86efac;">Enforced</span>
+                    </div>
+                    <ul class="diag-list">
+                        <li><span>DB Migration Blocker</span><strong>{{ 'Enabled' if health.safety_guardrails.db_migration_blocker else 'Disabled' }}</strong></li>
+                        <li><span>Min Confidence Threshold</span><strong>{{ health.safety_guardrails.min_confidence_threshold }}</strong></li>
+                        <li><span>Autonomous Remediation</span><strong>{{ 'Enabled' if health.safety_guardrails.auto_rollback_enabled else 'Disabled' }}</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Floating Toast -->
+    <div id="toast"></div>
+
+    <script>
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.display = 'flex';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        async function handleLogout() {
+            await fetch('/api/v1/auth/logout', { method: 'POST' });
+            window.location.href = '/';
+        }
+
+        function copyWebhook(endpoint) {
+            const fullUrl = window.location.origin + endpoint;
+            navigator.clipboard.writeText(fullUrl).then(() => {
+                showToast('✓ Webhook copied: ' + fullUrl);
+            });
+        }
+
+        async function changeUserRole(userId, newRole) {
+            if (!confirm(`Change user role to ${newRole}?`)) return;
+            try {
+                const res = await fetch(`/api/v1/admin/users/${userId}/role`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role: newRole })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(`✓ User role updated to ${newRole}`);
+                    setTimeout(() => window.location.reload(), 500);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to update role.'));
+                }
+            } catch (err) {
+                alert('Request failed: ' + err.message);
+            }
+        }
+
+        async function adminSimulateProject(projectId) {
+            try {
+                const res = await fetch(`/api/v1/projects/${projectId}/simulate`, { method: 'POST' });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('✓ Test crash simulation executed!');
+                    setTimeout(() => window.location.reload(), 600);
+                } else {
+                    alert('Simulation error: ' + (data.error || 'Failed'));
+                }
+            } catch (err) {
+                alert('Request failed: ' + err.message);
+            }
+        }
+
+        async function adminDeleteProject(projectId, projectName) {
+            if (!confirm(`ADMIN OVERRIDE: Delete project "${projectName}"? This removes all associated data.`)) return;
+            try {
+                const res = await fetch(`/api/v1/admin/projects/${projectId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast('✓ Project deleted.');
+                    setTimeout(() => window.location.reload(), 500);
+                } else {
+                    const data = await res.json();
+                    alert('Error: ' + (data.error || 'Failed'));
+                }
+            } catch (err) {
+                alert('Request failed: ' + err.message);
+            }
+        }
+
+        async function adminManualRollback(incidentId) {
+            if (!confirm(`ADMIN OVERRIDE: Force rollback for incident ${incidentId}?`)) return;
+            try {
+                const res = await fetch(`/api/v1/incident/${incidentId}/manual-rollback`, { method: 'POST' });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('✓ Rollback triggered!');
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed'));
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

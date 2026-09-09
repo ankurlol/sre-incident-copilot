@@ -62,6 +62,7 @@ class UserModel(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     name = Column(String(255), default="SRE Engineer")
     picture = Column(String(500), nullable=True)
+    role = Column(String(50), default="user") # 'admin' or 'user'
     created_at = Column(String(50), default=lambda: time.strftime("%Y-%m-%d %H:%M:%S"))
 
     # Default user-level GitHub Environment settings
