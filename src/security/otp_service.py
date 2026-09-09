@@ -7,14 +7,16 @@ from typing import Dict, Any, Tuple, Optional
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+from src.db.repository import OTPRepository
+
 logger = logging.getLogger("sre_copilot.otp")
 
 class OTPService:
     """
     Manages generation, delivery, rate limiting, and verification of 
     6-digit One-Time Passwords (OTPs) for members and platform administrators.
+    Backed by persistent database storage to guarantee consistency across multi-worker deployments.
     """
-    _store: Dict[str, Dict[str, Any]] = {}
 
     @classmethod
     def generate_otp(cls, email: str, purpose: str = "member_login") -> Tuple[str, bool, str]:
@@ -25,24 +27,24 @@ class OTPService:
         email = email.strip().lower()
         now = time.time()
 
-        # Rate limiting: minimum 15 seconds between OTP requests for the same email
-        if email in cls._store:
-            last_sent = cls._store[email].get("created_at", 0)
-            if now - last_sent < 15:
-                remaining = int(15 - (now - last_sent))
+        # Rate limiting: minimum 10 seconds between OTP requests for the same email
+        existing = OTPRepository.get_otp(email)
+        if existing:
+            last_sent = existing.get("created_at", 0)
+            if now - last_sent < 10:
+                remaining = int(10 - (now - last_sent))
                 return "", False, f"Please wait {remaining} seconds before requesting a new code."
 
         # Generate cryptographically secure 6-digit code (100000 - 999999)
         code = str(secrets.randbelow(900000) + 100000)
 
-        # 10 minutes lifetime
-        cls._store[email] = {
-            "code": code,
-            "purpose": purpose,
-            "created_at": now,
-            "expires_at": now + 600,
-            "attempts": 0
-        }
+        # 10 minutes lifetime, persisted across all workers in database
+        OTPRepository.save_otp(
+            email=email,
+            code=code,
+            purpose=purpose,
+            expires_at=now + 600
+        )
 
         logger.info(f"[AUTH OTP] Generated verification code for {email} (purpose: {purpose})")
 
@@ -59,7 +61,7 @@ class OTPService:
     @classmethod
     def verify_otp(cls, email: str, code: str, purpose: Optional[str] = None) -> Tuple[bool, str]:
         """
-        Validates the submitted OTP.
+        Validates the submitted OTP against database storage.
         Returns: (success, error_or_success_message)
         """
         email = email.strip().lower()
@@ -68,29 +70,29 @@ class OTPService:
         if not email or not code:
             return False, "Email and 6-digit verification code are required."
 
-        record = cls._store.get(email)
+        record = OTPRepository.get_otp(email)
         if not record:
             return False, "No active verification code found for this email. Please request a new code."
 
         now = time.time()
         if now > record["expires_at"]:
-            cls._store.pop(email, None)
+            OTPRepository.delete_otp(email)
             return False, "Verification code has expired. Please request a new code."
 
         if purpose and record.get("purpose") != purpose:
             return False, "Code was generated for a different authentication context."
 
-        record["attempts"] += 1
-        if record["attempts"] > 5:
-            cls._store.pop(email, None)
+        attempts = OTPRepository.increment_attempts(email)
+        if attempts > 5:
+            OTPRepository.delete_otp(email)
             return False, "Too many failed attempts. For your security, this code has been revoked. Request a new code."
 
         if not secrets.compare_digest(record["code"], code):
-            remaining = 5 - record["attempts"]
+            remaining = max(0, 5 - attempts)
             return False, f"Invalid verification code. {remaining} attempt(s) remaining."
 
         # Code matched! Consume and delete
-        cls._store.pop(email, None)
+        OTPRepository.delete_otp(email)
         return True, "Verification successful."
 
     @classmethod

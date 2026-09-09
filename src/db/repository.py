@@ -1,10 +1,11 @@
 import os
+import time
 import uuid
 import re
 from typing import List, Optional, Dict, Any
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from src.db.models import IncidentModel, UserModel, ProjectModel
+from src.db.models import IncidentModel, UserModel, ProjectModel, OTPModel
 from src.db.database import Base, engine, SessionLocal
 
 # Initialize tables (auto-provisions projects, users, incidents)
@@ -443,3 +444,77 @@ class UserRepository:
             "min_confidence_threshold": user.min_confidence_threshold,
             "block_on_db_migration": user.block_on_db_migration
         }
+
+class OTPRepository:
+    @staticmethod
+    def save_otp(email: str, code: str, purpose: str, expires_at: float) -> None:
+        db = SessionLocal()
+        try:
+            now = time.time()
+            clean_email = email.strip().lower()
+            record = db.query(OTPModel).filter(OTPModel.email == clean_email).first()
+            if not record:
+                record = OTPModel(
+                    email=clean_email,
+                    code=code,
+                    purpose=purpose,
+                    created_at=now,
+                    expires_at=expires_at,
+                    attempts=0
+                )
+                db.add(record)
+            else:
+                record.code = code
+                record.purpose = purpose
+                record.created_at = now
+                record.expires_at = expires_at
+                record.attempts = 0
+            db.commit()
+        finally:
+            db.close()
+
+    @staticmethod
+    def get_otp(email: str) -> Optional[Dict[str, Any]]:
+        db = SessionLocal()
+        try:
+            clean_email = email.strip().lower()
+            record = db.query(OTPModel).filter(OTPModel.email == clean_email).first()
+            if not record:
+                return None
+            return {
+                "email": record.email,
+                "code": record.code,
+                "purpose": record.purpose,
+                "created_at": record.created_at,
+                "expires_at": record.expires_at,
+                "attempts": record.attempts
+            }
+        finally:
+            db.close()
+
+    @staticmethod
+    def increment_attempts(email: str) -> int:
+        db = SessionLocal()
+        try:
+            clean_email = email.strip().lower()
+            record = db.query(OTPModel).filter(OTPModel.email == clean_email).first()
+            if record:
+                record.attempts += 1
+                db.commit()
+                return record.attempts
+            return 0
+        finally:
+            db.close()
+
+    @staticmethod
+    def delete_otp(email: str) -> None:
+        db = SessionLocal()
+        try:
+            clean_email = email.strip().lower()
+            record = db.query(OTPModel).filter(OTPModel.email == clean_email).first()
+            if record:
+                db.delete(record)
+                db.commit()
+        finally:
+            db.close()
+

@@ -1317,12 +1317,14 @@
             btn.innerText = 'Verifying...';
             statusDiv.style.display = 'none';
 
+            const email = activeMemberEmail || (document.getElementById('memberTargetEmail') ? document.getElementById('memberTargetEmail').innerText.trim() : '');
+
             try {
                 const res = await fetch('/api/v1/auth/otp/verify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        email: activeMemberEmail,
+                        email: email,
                         code: code,
                         name: activeMemberName || undefined,
                         purpose: 'member_login'

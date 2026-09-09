@@ -74,3 +74,14 @@ class UserModel(Base):
     auto_rollback_enabled = Column(Boolean, default=True)
     min_confidence_threshold = Column(Float, default=0.75)
     block_on_db_migration = Column(Boolean, default=True)
+
+class OTPModel(Base):
+    __tablename__ = "otps"
+
+    email = Column(String(255), primary_key=True, index=True)
+    code = Column(String(20), nullable=False)
+    purpose = Column(String(50), default="member_login")
+    created_at = Column(Float, nullable=False)
+    expires_at = Column(Float, nullable=False)
+    attempts = Column(Integer, default=0)
+
