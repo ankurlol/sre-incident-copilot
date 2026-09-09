@@ -1,7 +1,13 @@
-﻿import os
+import os
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 from typing import Optional
+
+# Automatically load local .env or Render secret file if present
+load_dotenv()
+if os.path.exists("/etc/secrets/.env"):
+    load_dotenv("/etc/secrets/.env", override=True)
 
 class Settings(BaseSettings):
     # App config
