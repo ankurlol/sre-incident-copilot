@@ -323,6 +323,9 @@ class UserRepository:
                 db.commit()
                 db.refresh(user)
             else:
+                admin_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
+                if admin_email and email.strip().lower() == admin_email and user.role != "admin":
+                    user.role = "admin"
                 if name and user.name != name:
                     user.name = name
                 if picture and user.picture != picture:

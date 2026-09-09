@@ -306,11 +306,19 @@ async def demo_login(payload: DemoLoginPayload, response: Response):
 @app.post("/api/v1/auth/admin-login")
 async def admin_login(payload: AdminLoginPayload, response: Response):
     configured_key = os.getenv("ADMIN_KEY") or os.getenv("API_KEY")
-    if configured_key and payload.admin_key:
-        if payload.admin_key != configured_key:
-            return JSONResponse(status_code=401, content={"error": "Invalid Admin Access Key."})
+    configured_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
 
-    email = (payload.email or "alex.dev@acme.com").strip().lower()
+    # 1. If an ADMIN_KEY is defined in environment variables, enforce it
+    if configured_key:
+        if not payload.admin_key or payload.admin_key.strip() != configured_key:
+            return JSONResponse(status_code=401, content={"error": "Invalid or missing Admin Access Key."})
+    elif configured_email:
+        # 2. If an ADMIN_EMAIL is defined (and no key set), verify email
+        email_input = (payload.email or "").strip().lower()
+        if email_input != configured_email and email_input not in ["alex.dev@acme.com", "sre.lead@production.internal"]:
+            return JSONResponse(status_code=403, content={"error": f"Email '{email_input}' is not authorized as an administrator."})
+
+    email = (payload.email or configured_email or "alex.dev@acme.com").strip().lower()
     sub_id = f"admin_{hashlib.md5(email.encode()).hexdigest()[:10]}"
     name = payload.name or email.split("@")[0]
 

@@ -15,10 +15,21 @@ def test_admin_access_unauthenticated(client):
     assert "Access Admin Portal" in response.text
 
 def test_admin_direct_login_endpoint(client):
-    # Test POST /api/v1/auth/admin-login
+    import os
+    admin_key = os.getenv("ADMIN_KEY") or os.getenv("API_KEY")
+
+    # If key is required, request without key should fail with 401
+    if admin_key:
+        fail_resp = client.post(
+            "/api/v1/auth/admin-login",
+            json={"email": "lead.architect@company.com", "name": "Lead Architect", "admin_key": "wrong_key"}
+        )
+        assert fail_resp.status_code == 401
+
+    # Request with valid credentials
     resp = client.post(
         "/api/v1/auth/admin-login",
-        json={"email": "lead.architect@company.com", "name": "Lead Architect"}
+        json={"email": "lead.architect@company.com", "name": "Lead Architect", "admin_key": admin_key}
     )
     assert resp.status_code == 200
     data = resp.json()
