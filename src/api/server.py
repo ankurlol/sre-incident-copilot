@@ -352,8 +352,8 @@ async def simulate_scenario_1():
     user_tier = user_session['subscription']['tier']
 KeyError: 'tier'
 [ERROR] Pod payment-service-7d84b79b64-8x92p exited with status 1 (CrashLoopBackOff)""",
-        current_commit_sha="a7f3b199042d31289cf02",
-        previous_commit_sha="e4c89211048b29104fa87",
+        current_commit_sha="47f0606",
+        previous_commit_sha="3f43acc",
         commit_author="alex.dev@acme.com",
         commit_message="feat(checkout): add premium tier discount calculation",
         changed_files=["services/checkout.py", "tests/test_checkout.py"],
