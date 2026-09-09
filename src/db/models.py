@@ -2,10 +2,32 @@ import time
 from sqlalchemy import Column, String, Float, Boolean, Text, Integer, JSON
 from src.db.database import Base
 
+class ProjectModel(Base):
+    __tablename__ = "projects"
+
+    id = Column(String(50), primary_key=True, index=True) # e.g. proj_xxxx
+    user_id = Column(String(100), index=True, nullable=False) # Owner user id
+    name = Column(String(100), nullable=False)
+    service_slug = Column(String(100), index=True, nullable=False)
+    description = Column(Text, nullable=True)
+    created_at = Column(String(50), default=lambda: time.strftime("%Y-%m-%d %H:%M:%S"))
+
+    # GitHub repository & rollback configuration for this project
+    github_owner = Column(String(100), nullable=False)
+    github_repo = Column(String(100), nullable=False)
+    github_token = Column(String(255), nullable=True) # Optional project token override
+    github_workflow_id = Column(String(100), default="deploy.yml")
+    target_service_url = Column(String(255), nullable=True)
+    auto_rollback_enabled = Column(Boolean, default=True)
+    min_confidence_threshold = Column(Float, default=0.75)
+    block_on_db_migration = Column(Boolean, default=True)
+
 class IncidentModel(Base):
     __tablename__ = "incidents"
 
     incident_id = Column(String(50), primary_key=True, index=True)
+    project_id = Column(String(50), index=True, nullable=True) # Project foreign reference
+    user_id = Column(String(100), index=True, nullable=True)    # User foreign reference
     timestamp = Column(String(50), default=lambda: time.strftime("%Y-%m-%d %H:%M:%S"))
     service_name = Column(String(100), index=True)
     severity = Column(String(10), default="P1")
@@ -42,7 +64,7 @@ class UserModel(Base):
     picture = Column(String(500), nullable=True)
     created_at = Column(String(50), default=lambda: time.strftime("%Y-%m-%d %H:%M:%S"))
 
-    # Per-user GitHub Environment settings
+    # Default user-level GitHub Environment settings
     github_token = Column(String(255), nullable=True)
     github_owner = Column(String(100), nullable=True)
     github_repo = Column(String(100), nullable=True)

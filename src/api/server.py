@@ -1,5 +1,6 @@
 import os
 import time
+import hashlib
 import httpx
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, Request, Response, Depends, BackgroundTasks
@@ -18,7 +19,7 @@ from src.automation.health_verifier import HealthVerifier
 from src.notifications.reporter import IncidentReporter
 from src.security.sanitizer import LogSanitizer
 from src.security.auth import verify_api_key
-from src.db.repository import IncidentRepository, UserRepository
+from src.db.repository import IncidentRepository, UserRepository, ProjectRepository
 
 app = FastAPI(title=settings.APP_NAME)
 
@@ -50,6 +51,18 @@ class DemoLoginPayload(BaseModel):
     email: Optional[str] = "alex.dev@acme.com"
     name: Optional[str] = "Alex Rivera (Demo SRE)"
 
+class CreateProjectPayload(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    github_owner: str
+    github_repo: str
+    github_token: Optional[str] = None
+    github_workflow_id: Optional[str] = "deploy.yml"
+    target_service_url: Optional[str] = None
+    auto_rollback_enabled: Optional[bool] = True
+    min_confidence_threshold: Optional[float] = 0.75
+    block_on_db_migration: Optional[bool] = True
+
 class UserConfigPayload(BaseModel):
     user_id: Optional[str] = None
     github_token: Optional[str] = None
@@ -66,7 +79,12 @@ class TestGitHubPayload(BaseModel):
     owner: str
     repo: str
 
-async def process_incident(payload: AlertPayload, user_config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+async def process_incident(
+    payload: AlertPayload,
+    user_config: Optional[Dict[str, Any]] = None,
+    project_id: Optional[str] = None,
+    user_id: Optional[str] = None
+) -> Dict[str, Any]:
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
     
     # 1. PII & Secret Redaction (Pre-RAG Data Privacy Guard)
@@ -107,7 +125,6 @@ async def process_incident(payload: AlertPayload, user_config: Optional[Dict[str
 
     # 6. Autonomous Remediation Execution (if guardrail passed)
     if guardrail_result.passed:
-        # Use user-specific GitHub repository if configured, otherwise fallback to system defaults
         token = user_config.get("github_token") if user_config else None
         owner = user_config.get("github_owner") if user_config else None
         repo = user_config.get("github_repo") if user_config else None
@@ -132,6 +149,8 @@ async def process_incident(payload: AlertPayload, user_config: Optional[Dict[str
 
     incident_record = {
         "incident_id": rca.incident_id,
+        "project_id": project_id,
+        "user_id": user_id,
         "timestamp": timestamp,
         "service_name": payload.service_name,
         "severity": rca.severity,
@@ -147,23 +166,55 @@ async def process_incident(payload: AlertPayload, user_config: Optional[Dict[str
         "redactions": redactions + diff_redactions
     }
 
-    # 8. Persistent Storage in SQLite / PostgreSQL
+    # 8. Persistent Storage in PostgreSQL / SQLite
     IncidentRepository.save_incident(incident_record)
     return incident_record
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
-    incidents = IncidentRepository.get_all_incidents()
     user_id = request.cookies.get("sre_user_id")
     current_user = UserRepository.get_user_by_id(user_id) if user_id else None
+
+    # If unauthenticated, render the public marketing landing page (all projects/incidents hidden)
+    if not current_user:
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={
+                "app_name": settings.APP_NAME,
+                "current_user": None,
+                "is_authenticated": False,
+                "projects": [],
+                "active_project": None,
+                "incidents": [],
+                "google_client_id": os.getenv("GOOGLE_CLIENT_ID", ""),
+                "auto_rollback_enabled": settings.AUTO_ROLLBACK_ENABLED,
+                "guardrail_threshold": settings.MIN_CONFIDENCE_THRESHOLD,
+                "simulated_mode": settings.SIMULATE_GITHUB_ACTIONS
+            }
+        )
+
+    # If authenticated, load ONLY this user's projects and incidents
+    user_projects = ProjectRepository.get_user_projects(current_user["id"])
+    active_project_id = request.query_params.get("project_id")
+    active_project = None
+    if user_projects:
+        active_project = next((p for p in user_projects if p["id"] == active_project_id), user_projects[0])
+
+    incidents = []
+    if active_project:
+        incidents = IncidentRepository.get_incidents_for_user(current_user["id"], project_id=active_project["id"])
 
     return templates.TemplateResponse(
         request=request,
         name="index.html",
         context={
             "app_name": settings.APP_NAME,
-            "incidents": incidents,
             "current_user": current_user,
+            "is_authenticated": True,
+            "projects": user_projects,
+            "active_project": active_project,
+            "incidents": incidents,
             "google_client_id": os.getenv("GOOGLE_CLIENT_ID", ""),
             "auto_rollback_enabled": settings.AUTO_ROLLBACK_ENABLED,
             "guardrail_threshold": settings.MIN_CONFIDENCE_THRESHOLD,
@@ -172,14 +223,17 @@ async def dashboard(request: Request):
     )
 
 @app.get("/api/v1/incidents", response_class=JSONResponse)
-async def get_incidents():
-    incidents = IncidentRepository.get_all_incidents()
+async def get_incidents(request: Request):
+    user_id = request.cookies.get("sre_user_id") or request.headers.get("X-User-Id")
+    if user_id:
+        incidents = IncidentRepository.get_incidents_for_user(user_id)
+    else:
+        incidents = []
     return {"incidents": incidents}
 
 @app.post("/api/v1/auth/google")
 async def auth_google(payload: GoogleAuthPayload, response: Response):
     try:
-        # Validate ID token with Google tokeninfo endpoint
         async with httpx.AsyncClient() as client:
             resp = await client.get(
                 f"https://oauth2.googleapis.com/tokeninfo?id_token={payload.credential}",
@@ -204,7 +258,7 @@ async def auth_google(payload: GoogleAuthPayload, response: Response):
             response.set_cookie(
                 key="sre_user_id",
                 value=user["id"],
-                max_age=60 * 60 * 24 * 30, # 30 days
+                max_age=60 * 60 * 24 * 30,
                 httponly=False,
                 samesite="lax"
             )
@@ -214,7 +268,6 @@ async def auth_google(payload: GoogleAuthPayload, response: Response):
 
 @app.post("/api/v1/auth/demo-login")
 async def demo_login(payload: DemoLoginPayload, response: Response):
-    import hashlib
     email = (payload.email or "alex.dev@acme.com").strip().lower()
     sub_id = f"demo_{hashlib.md5(email.encode()).hexdigest()[:10]}"
     name = payload.name or email.split("@")[0]
@@ -246,11 +299,93 @@ async def get_current_user(request: Request):
     user = UserRepository.get_user_by_id(user_id)
     return {"user": user}
 
+# Project Management Endpoints (Multi-Tenant)
+@app.post("/api/v1/projects")
+async def create_project(payload: CreateProjectPayload, request: Request):
+    user_id = request.cookies.get("sre_user_id") or request.headers.get("X-User-Id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"error": "Please sign in to create a project."})
+
+    project = ProjectRepository.create_project(user_id, payload.model_dump())
+    return {"status": "success", "project": project}
+
+@app.get("/api/v1/projects")
+async def list_projects(request: Request):
+    user_id = request.cookies.get("sre_user_id") or request.headers.get("X-User-Id")
+    if not user_id:
+        return {"projects": []}
+    return {"projects": ProjectRepository.get_user_projects(user_id)}
+
+@app.delete("/api/v1/projects/{project_id}")
+async def delete_project(project_id: str, request: Request):
+    user_id = request.cookies.get("sre_user_id") or request.headers.get("X-User-Id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+
+    success = ProjectRepository.delete_project(project_id, user_id)
+    if not success:
+        return JSONResponse(status_code=404, content={"error": "Project not found or unauthorized."})
+    return {"status": "deleted"}
+
+@app.post("/api/v1/projects/{project_id}/simulate")
+async def simulate_project_incident(project_id: str, request: Request):
+    user_id = request.cookies.get("sre_user_id") or request.headers.get("X-User-Id")
+    project = ProjectRepository.get_project_by_id(project_id, user_id=user_id)
+    if not project:
+        return JSONResponse(status_code=404, content={"error": "Project not found."})
+
+    user = UserRepository.get_user_by_id(project["user_id"])
+    user_token = project["has_github_token"] and project.get("github_token") or (user.get("github_token") if user else None)
+
+    user_config = {
+        "github_token": user_token,
+        "github_owner": project["github_owner"],
+        "github_repo": project["github_repo"],
+        "github_workflow_id": project["github_workflow_id"]
+    }
+
+    payload = AlertPayload(
+        service_name=project["name"],
+        error_log=f"""Traceback (most recent call last):
+  File "/app/services/checkout.py", line 112, in process_payment
+    user_tier = user_session['subscription']['tier']
+KeyError: 'tier'
+[ERROR] Pod {project['service_slug']}-7d84b79b64 exited with status 1 (CrashLoopBackOff)""",
+        current_commit_sha="47f0606",
+        previous_commit_sha="3f43acc",
+        commit_author="dev@company.com",
+        commit_message=f"feat({project['service_slug']}): add checkout discount logic",
+        changed_files=["services/checkout.py"],
+        diff_snippet="+ user_tier = user_session['subscription']['tier']"
+    )
+
+    result = await process_incident(payload, user_config=user_config, project_id=project["id"], user_id=project["user_id"])
+    return {"status": "simulated", "incident": result}
+
+@app.post("/api/v1/projects/{project_id}/alert")
+async def project_alert_webhook(project_id: str, payload: AlertPayload):
+    project = ProjectRepository.get_project_by_id(project_id)
+    if not project:
+        return JSONResponse(status_code=404, content={"error": "Monitored project not found."})
+
+    user = UserRepository.get_user_by_id(project["user_id"])
+    user_token = project.get("github_token") or (user.get("github_token") if user else None)
+
+    user_config = {
+        "github_token": user_token,
+        "github_owner": project["github_owner"],
+        "github_repo": project["github_repo"],
+        "github_workflow_id": project["github_workflow_id"]
+    }
+
+    result = await process_incident(payload, user_config=user_config, project_id=project["id"], user_id=project["user_id"])
+    return {"status": "processed", "incident": result}
+
 @app.post("/api/v1/user/config")
 async def update_user_config(payload: UserConfigPayload, request: Request):
     user_id = payload.user_id or request.cookies.get("sre_user_id") or request.headers.get("X-User-Id")
     if not user_id:
-        return JSONResponse(status_code=401, content={"error": "Please log in to save your GitHub environment."})
+        return JSONResponse(status_code=401, content={"error": "Please log in to save your settings."})
 
     config_data = payload.model_dump(exclude_unset=True)
     if "user_id" in config_data:
@@ -273,26 +408,7 @@ async def test_user_github(payload: TestGitHubPayload):
 
 @app.post("/api/v1/incident/alert", dependencies=[Depends(verify_api_key)])
 async def receive_alert(payload: AlertPayload, request: Request):
-    user_id = request.headers.get("X-User-Id") or request.cookies.get("sre_user_id")
-    user_config = None
-    if user_id:
-        # Load user's custom GitHub config if present
-        from src.db.database import SessionLocal
-        from src.db.models import UserModel
-        db = SessionLocal()
-        try:
-            u = db.query(UserModel).filter(UserModel.id == user_id).first()
-            if u:
-                user_config = {
-                    "github_token": u.github_token,
-                    "github_owner": u.github_owner,
-                    "github_repo": u.github_repo,
-                    "github_workflow_id": u.github_workflow_id
-                }
-        finally:
-            db.close()
-
-    result = await process_incident(payload, user_config=user_config)
+    result = await process_incident(payload)
     return {"status": "processed", "incident": result}
 
 @app.post("/api/v1/incident/{incident_id}/manual-rollback", dependencies=[Depends(verify_api_key)])
