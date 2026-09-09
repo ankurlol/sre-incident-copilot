@@ -388,6 +388,21 @@ class UserRepository:
             db.close()
 
     @staticmethod
+    def delete_user(user_id: str) -> bool:
+        db = SessionLocal()
+        try:
+            user = db.query(UserModel).filter(UserModel.id == user_id).first()
+            if not user:
+                return False
+            db.query(ProjectModel).filter(ProjectModel.user_id == user_id).delete()
+            db.query(IncidentModel).filter(IncidentModel.user_id == user_id).delete()
+            db.delete(user)
+            db.commit()
+            return True
+        finally:
+            db.close()
+
+    @staticmethod
     def update_user_config(user_id: str, config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         db = SessionLocal()
         try:

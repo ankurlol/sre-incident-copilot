@@ -682,15 +682,22 @@
                             <td><span style="font-weight: 700;">{{ u.incident_count }}</span></td>
                             <td><span style="font-size: 12px; color: var(--text-muted);">{{ u.created_at[:10] if u.created_at else 'N/A' }}</span></td>
                             <td>
-                                {% if u.role == 'admin' %}
-                                <button type="button" class="btn-outline btn-sm" onclick="changeUserRole('{{ u.id }}', 'user')">
-                                    Demote to User
-                                </button>
-                                {% else %}
-                                <button type="button" class="btn-sm" onclick="changeUserRole('{{ u.id }}', 'admin')">
-                                    Promote to Admin
-                                </button>
-                                {% endif %}
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    {% if u.role == 'admin' %}
+                                    <button type="button" class="btn-outline btn-sm" onclick="changeUserRole('{{ u.id }}', 'user')">
+                                        Demote to User
+                                    </button>
+                                    {% else %}
+                                    <button type="button" class="btn-sm" onclick="changeUserRole('{{ u.id }}', 'admin')">
+                                        Promote to Admin
+                                    </button>
+                                    {% endif %}
+                                    {% if current_user.id != u.id %}
+                                    <button type="button" class="btn-danger btn-sm" style="background: transparent !important; color: var(--danger) !important; border: 1px solid #fecaca; padding: 4px 8px; font-size: 11px;" onclick="deleteUserAccount('{{ u.id }}', '{{ u.email }}')">
+                                        Delete
+                                    </button>
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -969,6 +976,22 @@
                 }
             } catch (err) {
                 alert('Request failed: ' + err.message);
+            }
+        }
+
+        async function deleteUserAccount(userId, email) {
+            if (!confirm(`ADMIN OVERRIDE: Permanently delete user "${email}" and all their monitored projects?`)) return;
+            try {
+                const res = await fetch(`/api/v1/admin/users/${userId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('✓ User account permanently deleted.');
+                    setTimeout(() => window.location.reload(), 500);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to delete user.'));
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
             }
         }
 

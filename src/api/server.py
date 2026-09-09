@@ -865,6 +865,18 @@ async def admin_update_user_role(user_id: str, payload: UserRolePayload, request
         return JSONResponse(status_code=404, content={"error": "User not found."})
     return {"status": "success", "user": updated}
 
+@app.delete("/api/v1/admin/users/{user_id}", response_class=JSONResponse)
+async def admin_delete_user(user_id: str, request: Request):
+    admin = get_current_admin(request)
+    if not admin:
+        return JSONResponse(status_code=403, content={"error": "Admin access required."})
+    if admin.get("id") == user_id:
+        return JSONResponse(status_code=400, content={"error": "Cannot delete your own active administrator account."})
+    success = UserRepository.delete_user(user_id)
+    if not success:
+        return JSONResponse(status_code=404, content={"error": "User not found."})
+    return {"status": "success", "deleted_user_id": user_id}
+
 @app.delete("/api/v1/admin/projects/{project_id}", response_class=JSONResponse)
 async def admin_delete_project(project_id: str, request: Request):
     if not get_current_admin(request):
