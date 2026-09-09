@@ -1,4 +1,4 @@
-﻿import time
+import time
 from sqlalchemy import Column, String, Float, Boolean, Text, Integer, JSON
 from src.db.database import Base
 
@@ -32,3 +32,22 @@ class IncidentModel(Base):
     
     raw_error_log = Column(Text)
     redaction_count = Column(Integer, default=0)
+
+class UserModel(Base):
+    __tablename__ = "users"
+
+    id = Column(String(100), primary_key=True, index=True) # Google sub or unique user id
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    name = Column(String(255), default="SRE Engineer")
+    picture = Column(String(500), nullable=True)
+    created_at = Column(String(50), default=lambda: time.strftime("%Y-%m-%d %H:%M:%S"))
+
+    # Per-user GitHub Environment settings
+    github_token = Column(String(255), nullable=True)
+    github_owner = Column(String(100), nullable=True)
+    github_repo = Column(String(100), nullable=True)
+    github_workflow_id = Column(String(100), default="deploy.yml")
+    target_service_url = Column(String(255), nullable=True)
+    auto_rollback_enabled = Column(Boolean, default=True)
+    min_confidence_threshold = Column(Float, default=0.75)
+    block_on_db_migration = Column(Boolean, default=True)

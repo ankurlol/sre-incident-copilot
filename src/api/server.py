@@ -1,7 +1,8 @@
-﻿import os
+import os
 import time
+import httpx
 from typing import Dict, Any, List, Optional
-from fastapi import FastAPI, Request, Depends, BackgroundTasks
+from fastapi import FastAPI, Request, Response, Depends, BackgroundTasks
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -17,7 +18,7 @@ from src.automation.health_verifier import HealthVerifier
 from src.notifications.reporter import IncidentReporter
 from src.security.sanitizer import LogSanitizer
 from src.security.auth import verify_api_key
-from src.db.repository import IncidentRepository
+from src.db.repository import IncidentRepository, UserRepository
 
 app = FastAPI(title=settings.APP_NAME)
 
@@ -42,7 +43,30 @@ class AlertPayload(BaseModel):
     changed_files: List[str]
     diff_snippet: str
 
-async def process_incident(payload: AlertPayload) -> Dict[str, Any]:
+class GoogleAuthPayload(BaseModel):
+    credential: str
+
+class DemoLoginPayload(BaseModel):
+    email: Optional[str] = "alex.dev@acme.com"
+    name: Optional[str] = "Alex Rivera (Demo SRE)"
+
+class UserConfigPayload(BaseModel):
+    user_id: Optional[str] = None
+    github_token: Optional[str] = None
+    github_owner: Optional[str] = None
+    github_repo: Optional[str] = None
+    github_workflow_id: Optional[str] = "deploy.yml"
+    target_service_url: Optional[str] = None
+    auto_rollback_enabled: Optional[bool] = True
+    min_confidence_threshold: Optional[float] = 0.75
+    block_on_db_migration: Optional[bool] = True
+
+class TestGitHubPayload(BaseModel):
+    token: str
+    owner: str
+    repo: str
+
+async def process_incident(payload: AlertPayload, user_config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
     
     # 1. PII & Secret Redaction (Pre-RAG Data Privacy Guard)
@@ -83,9 +107,19 @@ async def process_incident(payload: AlertPayload) -> Dict[str, Any]:
 
     # 6. Autonomous Remediation Execution (if guardrail passed)
     if guardrail_result.passed:
+        # Use user-specific GitHub repository if configured, otherwise fallback to system defaults
+        token = user_config.get("github_token") if user_config else None
+        owner = user_config.get("github_owner") if user_config else None
+        repo = user_config.get("github_repo") if user_config else None
+        workflow_id = user_config.get("github_workflow_id") if user_config else None
+
         rollback_result = await github_client.trigger_rollback(
             target_sha=commit.previous_sha,
-            reason=f"[Autonomous SRE Copilot] Rollback triggered for incident {rca.incident_id}: {rca.root_cause_summary[:80]}"
+            reason=f"[Autonomous SRE Copilot] Rollback triggered for incident {rca.incident_id}: {rca.root_cause_summary[:80]}",
+            token=token,
+            owner=owner,
+            repo=repo,
+            workflow_id=workflow_id
         )
         guardrails.record_rollback(commit.previous_sha)
         health_result = await health_verifier.verify_service_health(mock_should_succeed=True)
@@ -120,12 +154,17 @@ async def process_incident(payload: AlertPayload) -> Dict[str, Any]:
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     incidents = IncidentRepository.get_all_incidents()
+    user_id = request.cookies.get("sre_user_id")
+    current_user = UserRepository.get_user_by_id(user_id) if user_id else None
+
     return templates.TemplateResponse(
         request=request,
         name="index.html",
         context={
             "app_name": settings.APP_NAME,
             "incidents": incidents,
+            "current_user": current_user,
+            "google_client_id": os.getenv("GOOGLE_CLIENT_ID", ""),
             "auto_rollback_enabled": settings.AUTO_ROLLBACK_ENABLED,
             "guardrail_threshold": settings.MIN_CONFIDENCE_THRESHOLD,
             "simulated_mode": settings.SIMULATE_GITHUB_ACTIONS
@@ -137,22 +176,160 @@ async def get_incidents():
     incidents = IncidentRepository.get_all_incidents()
     return {"incidents": incidents}
 
+@app.post("/api/v1/auth/google")
+async def auth_google(payload: GoogleAuthPayload, response: Response):
+    try:
+        # Validate ID token with Google tokeninfo endpoint
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"https://oauth2.googleapis.com/tokeninfo?id_token={payload.credential}",
+                timeout=10.0
+            )
+            if resp.status_code != 200:
+                return JSONResponse(status_code=400, content={"error": "Invalid Google credential token."})
+
+            token_data = resp.json()
+            sub_id = token_data.get("sub")
+            email = token_data.get("email")
+            name = token_data.get("name") or email.split("@")[0]
+            picture = token_data.get("picture")
+
+            user = UserRepository.get_or_create_user(
+                sub_id=sub_id,
+                email=email,
+                name=name,
+                picture=picture
+            )
+
+            response.set_cookie(
+                key="sre_user_id",
+                value=user["id"],
+                max_age=60 * 60 * 24 * 30, # 30 days
+                httponly=False,
+                samesite="lax"
+            )
+            return {"status": "success", "user": user}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": f"Authentication failed: {str(e)}"})
+
+@app.post("/api/v1/auth/demo-login")
+async def demo_login(payload: DemoLoginPayload, response: Response):
+    import hashlib
+    email = (payload.email or "alex.dev@acme.com").strip().lower()
+    sub_id = f"demo_{hashlib.md5(email.encode()).hexdigest()[:10]}"
+    name = payload.name or email.split("@")[0]
+    user = UserRepository.get_or_create_user(
+        sub_id=sub_id,
+        email=email,
+        name=name,
+        picture="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+    )
+    response.set_cookie(
+        key="sre_user_id",
+        value=user["id"],
+        max_age=60 * 60 * 24 * 30,
+        httponly=False,
+        samesite="lax"
+    )
+    return {"status": "success", "user": user}
+
+@app.post("/api/v1/auth/logout")
+async def logout(response: Response):
+    response.delete_cookie(key="sre_user_id")
+    return {"status": "logged_out"}
+
+@app.get("/api/v1/user/me")
+async def get_current_user(request: Request):
+    user_id = request.cookies.get("sre_user_id") or request.headers.get("X-User-Id")
+    if not user_id:
+        return {"user": None}
+    user = UserRepository.get_user_by_id(user_id)
+    return {"user": user}
+
+@app.post("/api/v1/user/config")
+async def update_user_config(payload: UserConfigPayload, request: Request):
+    user_id = payload.user_id or request.cookies.get("sre_user_id") or request.headers.get("X-User-Id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"error": "Please log in to save your GitHub environment."})
+
+    config_data = payload.model_dump(exclude_unset=True)
+    if "user_id" in config_data:
+        del config_data["user_id"]
+
+    updated_user = UserRepository.update_user_config(user_id, config_data)
+    if not updated_user:
+        return JSONResponse(status_code=404, content={"error": "User not found."})
+
+    return {"status": "success", "user": updated_user}
+
+@app.post("/api/v1/user/test-github")
+async def test_user_github(payload: TestGitHubPayload):
+    result = await github_client.test_connection(
+        token=payload.token,
+        owner=payload.owner,
+        repo=payload.repo
+    )
+    return result
+
 @app.post("/api/v1/incident/alert", dependencies=[Depends(verify_api_key)])
-async def receive_alert(payload: AlertPayload):
-    result = await process_incident(payload)
+async def receive_alert(payload: AlertPayload, request: Request):
+    user_id = request.headers.get("X-User-Id") or request.cookies.get("sre_user_id")
+    user_config = None
+    if user_id:
+        # Load user's custom GitHub config if present
+        from src.db.database import SessionLocal
+        from src.db.models import UserModel
+        db = SessionLocal()
+        try:
+            u = db.query(UserModel).filter(UserModel.id == user_id).first()
+            if u:
+                user_config = {
+                    "github_token": u.github_token,
+                    "github_owner": u.github_owner,
+                    "github_repo": u.github_repo,
+                    "github_workflow_id": u.github_workflow_id
+                }
+        finally:
+            db.close()
+
+    result = await process_incident(payload, user_config=user_config)
     return {"status": "processed", "incident": result}
 
 @app.post("/api/v1/incident/{incident_id}/manual-rollback", dependencies=[Depends(verify_api_key)])
-async def manual_rollback(incident_id: str):
+async def manual_rollback(incident_id: str, request: Request):
     incidents = IncidentRepository.get_all_incidents()
     incident = next((inc for inc in incidents if inc["incident_id"] == incident_id), None)
     if not incident:
         return JSONResponse(status_code=404, content={"error": "Incident not found"})
 
+    user_id = request.headers.get("X-User-Id") or request.cookies.get("sre_user_id")
+    user_token = None
+    user_owner = None
+    user_repo = None
+    user_workflow = None
+
+    if user_id:
+        from src.db.database import SessionLocal
+        from src.db.models import UserModel
+        db = SessionLocal()
+        try:
+            u = db.query(UserModel).filter(UserModel.id == user_id).first()
+            if u and u.github_token:
+                user_token = u.github_token
+                user_owner = u.github_owner
+                user_repo = u.github_repo
+                user_workflow = u.github_workflow_id
+        finally:
+            db.close()
+
     target_sha = incident["commit"]["previous_sha"]
     rollback_result = await github_client.trigger_rollback(
         target_sha=target_sha,
-        reason=f"[Manual Operator Override] Rollback executed for incident {incident_id}"
+        reason=f"[Manual Operator Override] Rollback executed for incident {incident_id}",
+        token=user_token,
+        owner=user_owner,
+        repo=user_repo,
+        workflow_id=user_workflow
     )
     guardrails.record_rollback(target_sha)
     health_result = await health_verifier.verify_service_health(mock_should_succeed=True)

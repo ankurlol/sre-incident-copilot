@@ -94,3 +94,41 @@ def test_scenario_2_guardrail_blocked_api():
     incident = data["incident"]
     assert incident["status"] == "NEEDS_REVIEW"
     assert incident["guardrail"]["passed"] is False
+
+
+def test_user_auth_and_config_persistence():
+    # 1. Test Demo / Instant Login
+    res_login = client.post("/api/v1/auth/demo-login", json={"email": "sre.lead@acme.com", "name": "Sarah Connor"})
+    assert res_login.status_code == 200
+    user = res_login.json()["user"]
+    assert user["email"] == "sre.lead@acme.com"
+
+    # 2. Test Get Current User
+    res_me = client.get("/api/v1/user/me", cookies={"sre_user_id": user["id"]})
+    assert res_me.status_code == 200
+    assert res_me.json()["user"]["name"] == "Sarah Connor"
+
+    # 3. Test Save Custom GitHub Environment
+    res_config = client.post("/api/v1/user/config", json={
+        "user_id": user["id"],
+        "github_owner": "custom-org",
+        "github_repo": "custom-checkout-api",
+        "github_workflow_id": "deploy-prod.yml",
+        "github_token": "ghp_secureSecretTokenTest999",
+        "block_on_db_migration": True,
+        "auto_rollback_enabled": True
+    })
+    assert res_config.status_code == 200
+    cfg = res_config.json()["user"]
+    assert cfg["github_owner"] == "custom-org"
+    assert cfg["github_repo"] == "custom-checkout-api"
+    assert "*" in cfg["github_token_masked"]
+
+def test_user_github_validation_endpoint():
+    res = client.post("/api/v1/user/test-github", json={
+        "token": "ghp_invalid_dummy_token_123",
+        "owner": "test-org",
+        "repo": "test-repo"
+    })
+    assert res.status_code == 200
+    assert res.json()["success"] is False

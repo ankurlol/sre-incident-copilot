@@ -1,7 +1,7 @@
-﻿import os
+import os
 import httpx
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -20,17 +20,33 @@ class GitHubRollbackClient:
         simulate_val = os.getenv("SIMULATE_GITHUB_ACTIONS", "false").lower()
         self.simulate = simulate_val == "true" or not bool(self.token)
 
-    async def trigger_rollback(self, target_sha: str, reason: str) -> Dict[str, Any]:
+    async def trigger_rollback(
+        self,
+        target_sha: str,
+        reason: str,
+        token: Optional[str] = None,
+        owner: Optional[str] = None,
+        repo: Optional[str] = None,
+        workflow_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         self.reload_config()
 
-        if self.simulate:
-            logger.info(f"[SIMULATION] Dispatched GitHub Actions rollback to SHA {target_sha} for {self.owner}/{self.repo}")
+        # Allow per-user overrides, fallback to system config
+        active_token = token or self.token
+        active_owner = owner or self.owner
+        active_repo = repo or self.repo
+        active_workflow = workflow_id or self.workflow_id
+
+        simulate_mode = self.simulate if not token else False
+
+        if simulate_mode or not active_token:
+            logger.info(f"[SIMULATION] Dispatched GitHub Actions rollback to SHA {target_sha} for {active_owner}/{active_repo}")
             return {
                 "status": "success",
                 "simulated": True,
                 "target_sha": target_sha,
-                "repository": f"{self.owner}/{self.repo}",
-                "workflow": self.workflow_id,
+                "repository": f"{active_owner}/{active_repo}",
+                "workflow": active_workflow,
                 "action": "workflow_dispatch",
                 "inputs": {
                     "rollback_sha": target_sha,
@@ -39,9 +55,9 @@ class GitHubRollbackClient:
                 "message": f"[SIMULATION] Triggered deployment workflow for commit {target_sha[:7]}."
             }
 
-        url = f"https://api.github.com/repos/{self.owner}/{self.repo}/actions/workflows/{self.workflow_id}/dispatches"
+        url = f"https://api.github.com/repos/{active_owner}/{active_repo}/actions/workflows/{active_workflow}/dispatches"
         headers = {
-            "Authorization": f"Bearer {self.token}",
+            "Authorization": f"Bearer {active_token}",
             "Accept": "application/vnd.github.v3+json",
             "User-Agent": "SRE-Incident-Copilot"
         }
@@ -61,6 +77,8 @@ class GitHubRollbackClient:
                         "status": "success",
                         "simulated": False,
                         "target_sha": target_sha,
+                        "repository": f"{active_owner}/{active_repo}",
+                        "workflow": active_workflow,
                         "status_code": response.status_code,
                         "message": f"Live GitHub Actions workflow triggered for commit {target_sha[:7]}."
                     }
@@ -68,12 +86,51 @@ class GitHubRollbackClient:
                     return {
                         "status": "error",
                         "simulated": False,
+                        "target_sha": target_sha,
+                        "repository": f"{active_owner}/{active_repo}",
                         "status_code": response.status_code,
-                        "error": response.text
+                        "error": response.text,
+                        "message": f"GitHub API error {response.status_code}"
                     }
             except Exception as e:
                 return {
                     "status": "error",
                     "simulated": False,
-                    "error": str(e)
+                    "target_sha": target_sha,
+                    "repository": f"{active_owner}/{active_repo}",
+                    "error": str(e),
+                    "message": f"Failed to dispatch GitHub workflow: {str(e)}"
                 }
+
+    async def test_connection(self, token: str, owner: str, repo: str) -> Dict[str, Any]:
+        if not token or not owner or not repo:
+            return {"success": False, "error": "Token, Owner, and Repository Name are all required."}
+
+        url = f"https://api.github.com/repos/{owner}/{repo}"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "SRE-Incident-Copilot"
+        }
+
+        async with httpx.AsyncClient() as client:
+            try:
+                resp = await client.get(url, headers=headers, timeout=10.0)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    return {
+                        "success": True,
+                        "repository": data.get("full_name"),
+                        "description": data.get("description") or "No description",
+                        "default_branch": data.get("default_branch", "main"),
+                        "private": data.get("private", False),
+                        "stars": data.get("stargazers_count", 0)
+                    }
+                elif resp.status_code == 401:
+                    return {"success": False, "error": "Authentication failed: Invalid GitHub Token."}
+                elif resp.status_code == 404:
+                    return {"success": False, "error": f"Repository '{owner}/{repo}' not found or token lacks permission to view it."}
+                else:
+                    return {"success": False, "error": f"GitHub API error {resp.status_code}: {resp.text}"}
+            except Exception as e:
+                return {"success": False, "error": f"Connection error: {str(e)}"}
