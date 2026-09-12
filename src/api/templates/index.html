@@ -1266,13 +1266,29 @@
                     document.getElementById('member_otp_code').value = '';
                     setTimeout(() => document.getElementById('member_otp_code').focus(), 100);
                 } else {
-                    statusDiv.className = 'connection-status error';
+                    statusDiv.style.display = 'block';
+                    statusDiv.style.background = '#fef2f2';
+                    statusDiv.style.color = '#dc2626';
+                    statusDiv.style.border = '1px solid #fecaca';
+                    statusDiv.style.padding = '10px';
+                    statusDiv.style.borderRadius = '6px';
+                    statusDiv.style.fontSize = '12.5px';
+                    statusDiv.style.marginBottom = '12px';
+                    statusDiv.style.textAlign = 'center';
                     statusDiv.innerText = data.error || 'Failed to send verification code.';
                     btn.disabled = false;
                     btn.innerText = 'Send Verification Code →';
                 }
             } catch (err) {
-                statusDiv.className = 'connection-status error';
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = '#fef2f2';
+                statusDiv.style.color = '#dc2626';
+                statusDiv.style.border = '1px solid #fecaca';
+                statusDiv.style.padding = '10px';
+                statusDiv.style.borderRadius = '6px';
+                statusDiv.style.fontSize = '12.5px';
+                statusDiv.style.marginBottom = '12px';
+                statusDiv.style.textAlign = 'center';
                 statusDiv.innerText = 'Network error: ' + err.message;
                 btn.disabled = false;
                 btn.innerText = 'Send Verification Code →';
@@ -1311,15 +1327,32 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
+                    btn.innerText = 'Success! Signing In...';
                     window.location.reload();
                 } else {
-                    statusDiv.className = 'connection-status error';
+                    statusDiv.style.display = 'block';
+                    statusDiv.style.background = '#fef2f2';
+                    statusDiv.style.color = '#dc2626';
+                    statusDiv.style.border = '1px solid #fecaca';
+                    statusDiv.style.padding = '10px';
+                    statusDiv.style.borderRadius = '6px';
+                    statusDiv.style.fontSize = '12.5px';
+                    statusDiv.style.marginBottom = '12px';
+                    statusDiv.style.textAlign = 'center';
                     statusDiv.innerText = data.error || 'Verification failed.';
                     btn.disabled = false;
                     btn.innerText = 'Verify & Sign In →';
                 }
             } catch (err) {
-                statusDiv.className = 'connection-status error';
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = '#fef2f2';
+                statusDiv.style.color = '#dc2626';
+                statusDiv.style.border = '1px solid #fecaca';
+                statusDiv.style.padding = '10px';
+                statusDiv.style.borderRadius = '6px';
+                statusDiv.style.fontSize = '12.5px';
+                statusDiv.style.marginBottom = '12px';
+                statusDiv.style.textAlign = 'center';
                 statusDiv.innerText = 'Network error: ' + err.message;
                 btn.disabled = false;
                 btn.innerText = 'Verify & Sign In →';
