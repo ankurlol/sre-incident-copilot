@@ -483,15 +483,70 @@
         }
 
 
-        /* Live Marquee Ticker */
+        /* ------------------------------------------------------------- */
+        /* AMBIENT CHROMATIC BACKGROUND & GLASSMORPHISM SYSTEM           */
+        /* ------------------------------------------------------------- */
+        .glass-atmosphere-wrap {
+            position: relative;
+            overflow: hidden;
+            padding: 40px 0 80px;
+        }
+
+        .ambient-glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            filter: blur(90px);
+            opacity: 0.45;
+            z-index: 0;
+            will-change: transform;
+        }
+
+        .orb-violet {
+            top: 5%;
+            left: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(124, 77, 255, 0.4) 0%, rgba(74, 20, 140, 0.15) 50%, transparent 70%);
+        }
+
+        .orb-cyan {
+            top: 30%;
+            right: -10%;
+            width: 550px;
+            height: 550px;
+            background: radial-gradient(circle, rgba(0, 229, 255, 0.3) 0%, rgba(0, 150, 255, 0.1) 50%, transparent 70%);
+        }
+
+        .orb-emerald {
+            top: 60%;
+            left: 15%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 200, 83, 0.28) 0%, transparent 65%);
+        }
+
+        .orb-coral {
+            bottom: 5%;
+            right: 5%;
+            width: 650px;
+            height: 650px;
+            background: radial-gradient(circle, rgba(244, 63, 94, 0.25) 0%, rgba(225, 29, 72, 0.08) 50%, transparent 70%);
+        }
+
+        /* Live Marquee Ticker: Frosted Glass */
         .ticker-wrap {
             width: 100%;
             overflow: hidden;
-            background: var(--surface);
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            padding: 12px 0;
+            background: rgba(255, 255, 255, 0.025);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            padding: 13px 0;
             margin: 20px 0 60px 0;
+            position: relative;
+            z-index: 2;
         }
 
         .ticker-move {
@@ -511,8 +566,8 @@
             padding: 0 28px;
             font-size: 12.5px;
             font-weight: 600;
-            color: var(--text-muted);
-            letter-spacing: 0.02em;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 0.03em;
             font-family: var(--font-mono);
         }
 
@@ -520,8 +575,8 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: var(--success);
-            box-shadow: 0 0 8px rgba(52, 211, 153, 0.7);
+            background: #34d399;
+            box-shadow: 0 0 10px rgba(52, 211, 153, 0.9);
         }
 
         @keyframes ticker {
@@ -529,22 +584,209 @@
             100% { transform: translateX(-50%); }
         }
 
-        /* Rolling Stats Grid */
+        /* Section Header */
+        .section-header {
+            text-align: center;
+            margin: 80px 0 52px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #c4b5fd;
+            background: rgba(110, 70, 230, 0.16);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(167, 139, 250, 0.35);
+            border-radius: 9999px;
+            padding: 5px 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 16px rgba(110, 70, 230, 0.2);
+        }
+
+        .section-title {
+            font-size: 38px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 14px;
+            color: #ffffff;
+            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .section-desc {
+            font-size: 16.5px;
+            color: rgba(255, 255, 255, 0.72);
+            max-width: 640px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* Services Grid: Premium Glassmorphism Cards */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 70px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .service-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.015) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-top: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 20px;
+            padding: 32px 28px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 45px -12px rgba(0, 0, 0, 0.6), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1.5px;
+            background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.8), transparent);
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(167, 139, 250, 0.45);
+            border-top-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 30px 60px -15px rgba(110, 70, 230, 0.35), 0 0 35px rgba(110, 70, 230, 0.18), inset 0 1px 2px rgba(255, 255, 255, 0.25);
+        }
+
+        .service-card:hover::before {
+            opacity: 1;
+        }
+
+        .service-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+        }
+
+        /* Illuminated Glass Icon Capsules */
+        .service-icon-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            position: relative;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+
+        .service-icon-box.glow-violet {
+            background: linear-gradient(135deg, rgba(110, 70, 230, 0.35) 0%, rgba(139, 92, 246, 0.15) 100%);
+            box-shadow: 0 0 24px rgba(110, 70, 230, 0.45);
+            color: #c4b5fd;
+        }
+
+        .service-icon-box.glow-emerald {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.35) 0%, rgba(52, 211, 153, 0.15) 100%);
+            box-shadow: 0 0 24px rgba(16, 185, 129, 0.45);
+            color: #6ee7b7;
+        }
+
+        .service-icon-box.glow-amber {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.35) 0%, rgba(251, 191, 36, 0.15) 100%);
+            box-shadow: 0 0 24px rgba(245, 158, 11, 0.45);
+            color: #fde68a;
+        }
+
+        .service-icon-box.glow-cyan {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.35) 0%, rgba(14, 165, 233, 0.15) 100%);
+            box-shadow: 0 0 24px rgba(6, 182, 212, 0.45);
+            color: #a5f3fc;
+        }
+
+        .service-icon-box.glow-rose {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.35) 0%, rgba(251, 113, 133, 0.15) 100%);
+            box-shadow: 0 0 24px rgba(244, 63, 94, 0.45);
+            color: #fecdd3;
+        }
+
+        .service-icon-box.glow-indigo {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.35) 0%, rgba(129, 140, 248, 0.15) 100%);
+            box-shadow: 0 0 24px rgba(99, 102, 241, 0.45);
+            color: #e0e7ff;
+        }
+
+        .card-micro-chip {
+            font-size: 11px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.65);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .service-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+
+        .service-detail {
+            font-size: 14.5px;
+            color: rgba(255, 255, 255, 0.72);
+            line-height: 1.7;
+        }
+
+        .service-detail strong {
+            color: #c4b5fd;
+            font-weight: 600;
+        }
+
+        /* Rolling Stats Banner: Floating Glass HUD */
         .stats-banner {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 1px;
-            background: var(--border);
-            border: 1px solid var(--border);
-            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-top: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 22px;
             overflow: hidden;
-            margin: 60px 0 80px 0;
+            margin: 60px 0 90px 0;
             text-align: center;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 24px 50px -15px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            position: relative;
+            z-index: 2;
         }
 
         .stats-item {
-            background: var(--surface-card);
-            padding: 32px 20px;
+            background: rgba(14, 11, 24, 0.55);
+            padding: 38px 24px;
+            transition: background 0.25s ease;
+        }
+        .stats-item:hover {
+            background: rgba(25, 18, 42, 0.65);
         }
 
         @media (max-width: 800px) {
@@ -555,165 +797,45 @@
         }
 
         .stats-item .stat-num {
-            font-size: 40px;
+            font-size: 44px;
             font-weight: 900;
             letter-spacing: -0.04em;
-            background: linear-gradient(135deg, #c4b5fd, #8b5cf6);
+            background: linear-gradient(135deg, #ffffff 0%, #c4b5fd 40%, #8b5cf6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             line-height: 1.1;
+            text-shadow: 0 0 35px rgba(139, 92, 246, 0.35);
         }
 
         .stats-item .stat-label {
-            font-size: 13px;
+            font-size: 13.5px;
             font-weight: 600;
-            color: var(--text-muted);
-            margin-top: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 10px;
         }
 
-        .hero-title {
-            font-size: 52px;
-            font-weight: 800;
-            letter-spacing: -0.04em;
-            line-height: 1.1;
-            margin: 20px auto 20px;
-            max-width: 820px;
-            color: var(--text-main);
-        }
-
-        .hero-title .accent {
-            background: linear-gradient(90deg, #a78bfa, #6e46e6 60%, #c4b5fd);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-subtitle {
-            font-size: 18px;
-            color: var(--text-muted);
-            max-width: 680px;
-            margin: 0 auto 36px;
-            line-height: 1.7;
-        }
-
-        .hero-cta {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-
-        /* Services Section */
-        .section-header {
-            text-align: center;
-            margin: 80px 0 48px;
-        }
-
-        .section-badge {
-            display: inline-block;
-            font-size: 11.5px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--accent-light);
-            background: rgba(110, 70, 230, 0.15);
-            border: 1px solid rgba(110, 70, 230, 0.3);
-            border-radius: 9999px;
-            padding: 4px 14px;
-            margin-bottom: 14px;
-        }
-
-        .section-title {
-            font-size: 34px;
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            margin-bottom: 14px;
-            color: var(--text-main);
-        }
-
-        .section-desc {
-            font-size: 16px;
-            color: var(--text-muted);
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.7;
-        }
-
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-            gap: 20px;
-            margin-bottom: 60px;
-        }
-
-        .service-card {
-            background: var(--surface-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 30px 26px;
-            transition: all 0.25s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .service-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .service-card:hover {
-            border-color: rgba(110, 70, 230, 0.5);
-            transform: translateY(-3px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(110, 70, 230, 0.15);
-        }
-
-        .service-card:hover::before {
-            opacity: 1;
-        }
-
-        .service-icon {
-            font-size: 30px;
-            margin-bottom: 18px;
-            display: inline-block;
-            filter: drop-shadow(0 0 12px rgba(110, 70, 230, 0.5));
-        }
-
-        .service-name {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--text-main);
-        }
-
-        .service-detail {
-            font-size: 14px;
-            color: var(--text-muted);
-            line-height: 1.7;
-        }
-
-        /* Workflow Steps */
+        /* Workflow Box: Mission Control Glass Pipeline */
         .workflow-box {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 48px 40px;
-            margin-bottom: 80px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.012) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.24);
+            border-radius: 24px;
+            padding: 48px 42px;
+            margin-bottom: 90px;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.14);
+            z-index: 2;
         }
 
         .workflow-box::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(110, 70, 230, 0.1) 0%, transparent 70%);
+            background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(110, 70, 230, 0.18) 0%, transparent 70%);
             pointer-events: none;
         }
 
@@ -721,7 +843,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 24px;
-            margin-top: 32px;
+            margin-top: 36px;
             position: relative;
         }
 
@@ -731,126 +853,159 @@
 
         @media (max-width: 600px) {
             .workflow-grid { grid-template-columns: 1fr; }
-            .hero-title { font-size: 36px; }
-            .nav-links { display: none; }
+        }
+
+        .step-card {
+            background: rgba(255, 255, 255, 0.035);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px 20px;
+            transition: all 0.25s ease;
+        }
+        .step-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(167, 139, 250, 0.4);
+            background: rgba(255, 255, 255, 0.06);
         }
 
         .step-number {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 800;
-            color: var(--accent-light);
-            background: rgba(110, 70, 230, 0.2);
-            border: 1px solid rgba(110, 70, 230, 0.4);
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
+            font-family: var(--font-mono);
+            color: #ffffff;
+            background: linear-gradient(135deg, #6e46e6 0%, #3b82f6 100%);
+            box-shadow: 0 0 18px rgba(110, 70, 230, 0.6);
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
         }
 
         .step-title {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 700;
             margin-bottom: 8px;
-            color: var(--text-main);
+            color: #ffffff;
         }
 
         .step-desc {
-            font-size: 13px;
-            color: var(--text-muted);
-            line-height: 1.6;
+            font-size: 13.5px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.65;
         }
 
-        /* Architecture Section */
+        /* Architecture Section: Glass Node Pipeline */
         .arch-diagram {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 28px 24px;
-            margin-bottom: 80px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px 24px;
+            margin-bottom: 90px;
             overflow-x: auto;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6);
         }
 
         .arch-node {
             flex: 1;
-            min-width: 140px;
+            min-width: 150px;
             text-align: center;
-            padding: 18px 12px;
-            background: var(--surface-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            transition: border-color 0.2s ease;
+            padding: 20px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            transition: all 0.25s ease;
         }
 
         .arch-node:hover {
-            border-color: rgba(110, 70, 230, 0.5);
+            border-color: rgba(167, 139, 250, 0.5);
+            background: rgba(255, 255, 255, 0.07);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(110, 70, 230, 0.25);
         }
 
         .arch-node-title {
-            font-size: 13px;
+            font-size: 13.5px;
             font-weight: 700;
-            margin-bottom: 4px;
-            color: var(--text-main);
+            margin-bottom: 6px;
+            color: #ffffff;
         }
 
         .arch-node-sub {
             font-size: 11.5px;
-            color: var(--text-muted);
+            color: rgba(255, 255, 255, 0.65);
+            font-family: var(--font-mono);
         }
 
         .arch-arrow {
-            color: #6e46e6;
+            color: #a78bfa;
             font-weight: bold;
-            font-size: 20px;
+            font-size: 22px;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.6));
         }
 
-        /* Footer CTA Banner */
+        /* Footer CTA Banner: Chromatic Glass Showcase */
         .bottom-cta {
-            background: linear-gradient(135deg, #1a1130 0%, #0e0b16 40%, #1a1130 100%);
-            border: 1px solid rgba(110, 70, 230, 0.35);
+            background: linear-gradient(135deg, rgba(30, 20, 56, 0.7) 0%, rgba(14, 11, 24, 0.85) 50%, rgba(30, 20, 56, 0.7) 100%);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(167, 139, 250, 0.35);
+            border-top: 1px solid rgba(255, 255, 255, 0.35);
             color: #ffffff;
-            border-radius: 20px;
-            padding: 72px 40px;
+            border-radius: 24px;
+            padding: 76px 40px;
             text-align: center;
             margin-bottom: 60px;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 35px 80px -15px rgba(0, 0, 0, 0.8), 0 0 50px rgba(110, 70, 230, 0.25);
+            z-index: 2;
         }
 
         .bottom-cta::before {
             content: '';
             position: absolute;
-            top: -50%;
+            top: -60%;
             left: 50%;
             transform: translateX(-50%);
-            width: 600px;
-            height: 400px;
-            background: radial-gradient(ellipse, rgba(110, 70, 230, 0.3) 0%, transparent 70%);
+            width: 700px;
+            height: 450px;
+            background: radial-gradient(ellipse, rgba(110, 70, 230, 0.4) 0%, rgba(0, 229, 255, 0.15) 40%, transparent 70%);
             pointer-events: none;
         }
 
         .bottom-cta h2 {
-            font-size: 36px;
+            font-size: 40px;
             font-weight: 800;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
             letter-spacing: -0.03em;
             position: relative;
+            text-shadow: 0 2px 24px rgba(0, 0, 0, 0.5);
         }
 
         .bottom-cta p {
-            color: var(--text-muted);
-            font-size: 17px;
-            max-width: 600px;
-            margin: 0 auto 32px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 17.5px;
+            max-width: 640px;
+            margin: 0 auto 36px;
             line-height: 1.7;
             position: relative;
         }
+
 
         /* ------------------------------------------------------------- */
         /* AUTHENTICATED DASHBOARD (User Console)                        */
@@ -1588,176 +1743,236 @@
     </section>
 
 
-    <main class="container">
-        <!-- Live Telemetry Marquee Ticker -->
-        <div class="ticker-wrap">
-            <div class="ticker-move">
-                <div class="ticker-item"><span class="dot"></span> PROD-US-EAST-1: ACTIVE</div>
-                <div class="ticker-item"><span class="dot"></span> HYBRID RAG: BM25 + VECTORS READY</div>
-                <div class="ticker-item"><span class="dot"></span> GITOPS GUARDRAILS: ENFORCING SCHEMA SAFETY</div>
-                <div class="ticker-item"><span class="dot"></span> MTTR BENCHMARK: &lt; 42s AUTOMATED ROLLBACK</div>
-                <div class="ticker-item"><span class="dot"></span> K8S INGRESS: ZERO PACKET LOSS</div>
-                <div class="ticker-item"><span class="dot"></span> RUNBOOK CORPUS: 1,420 INCIDENT PATTERNS INDEXED</div>
-                <div class="ticker-item"><span class="dot"></span> PROD-EU-CENTRAL-1: HEALTHY</div>
-                <!-- Duplicate for seamless looping -->
-                <div class="ticker-item"><span class="dot"></span> PROD-US-EAST-1: ACTIVE</div>
-                <div class="ticker-item"><span class="dot"></span> HYBRID RAG: BM25 + VECTORS READY</div>
-                <div class="ticker-item"><span class="dot"></span> GITOPS GUARDRAILS: ENFORCING SCHEMA SAFETY</div>
-                <div class="ticker-item"><span class="dot"></span> MTTR BENCHMARK: &lt; 42s AUTOMATED ROLLBACK</div>
-                <div class="ticker-item"><span class="dot"></span> K8S INGRESS: ZERO PACKET LOSS</div>
-                <div class="ticker-item"><span class="dot"></span> RUNBOOK CORPUS: 1,420 INCIDENT PATTERNS INDEXED</div>
-                <div class="ticker-item"><span class="dot"></span> PROD-EU-CENTRAL-1: HEALTHY</div>
-            </div>
-        </div>
+    <div class="glass-atmosphere-wrap">
+        <!-- Ambient chromatic glow orbs behind glass content -->
+        <div class="ambient-glow-orb orb-violet"></div>
+        <div class="ambient-glow-orb orb-cyan"></div>
+        <div class="ambient-glow-orb orb-emerald"></div>
+        <div class="ambient-glow-orb orb-coral"></div>
 
-        <!-- Services & Capabilities Section -->
-        <section id="services">
-            <div class="section-header">
-                <div class="section-badge">Core Services</div>
-                <h2 class="section-title">Built for Zero-Touch Reliability</h2>
-                <p class="section-desc">Engineered for modern SRE teams who can't afford manual incident response. Every service works autonomously, end-to-end.</p>
-            </div>
-
-            <div class="services-grid">
-                <div class="service-card tilt-card">
-                    <div class="service-icon">🔍</div>
-                    <h3 class="service-name">Hybrid RAG RCA Engine</h3>
-                    <p class="service-detail">Combines Sparse BM25 and Dense Vector search over operational runbooks, past post-mortems, and Git commit diffs to pinpoint the exact breaking change in seconds.</p>
-                </div>
-
-                <div class="service-card tilt-card">
-                    <div class="service-icon">🛡️</div>
-                    <h3 class="service-name">Enterprise Guardrails</h3>
-                    <p class="service-detail">Automatically detects database schema migrations (Alembic, Prisma, Flyway) and blocks destructive rollbacks that could cause irreversible data corruption.</p>
-                </div>
-
-                <div class="service-card tilt-card">
-                    <div class="service-icon">⚡</div>
-                    <h3 class="service-name">Autonomous GitOps Rollback</h3>
-                    <p class="service-detail">Dispatches GitHub Actions workflows to redeploy the last verified stable commit SHA the moment a P0/P1 regression clears all safety filters.</p>
-                </div>
-
-                <div class="service-card tilt-card">
-                    <div class="service-icon">🩺</div>
-                    <h3 class="service-name">Health Verification</h3>
-                    <p class="service-detail">Actively polls your application's <code style="font-family:var(--font-mono); color:var(--accent-light);">/healthz</code> endpoints post-rollback to confirm full restoration before closing the incident.</p>
-                </div>
-
-                <div class="service-card tilt-card">
-                    <div class="service-icon">📡</div>
-                    <h3 class="service-name">Multi-Source Ingestion</h3>
-                    <p class="service-detail">Accepts structured crash payloads from Sentry, Datadog, Prometheus, CloudWatch, or any monitoring tool via a single project webhook endpoint.</p>
-                </div>
-
-                <div class="service-card tilt-card">
-                    <div class="service-icon">🔐</div>
-                    <h3 class="service-name">Secure Multi-Tenant Isolation</h3>
-                    <p class="service-detail">Every project operates in full isolation. PII and secrets are redacted from crash logs before LLM processing. Zero cross-tenant data leakage guaranteed.</p>
+        <main class="container" style="position: relative; z-index: 2;">
+            <!-- Live Telemetry Marquee Ticker -->
+            <div class="ticker-wrap">
+                <div class="ticker-move">
+                    <div class="ticker-item"><span class="dot"></span> PROD-US-EAST-1: ACTIVE</div>
+                    <div class="ticker-item"><span class="dot"></span> HYBRID RAG: BM25 + VECTORS READY</div>
+                    <div class="ticker-item"><span class="dot"></span> GITOPS GUARDRAILS: ENFORCING SCHEMA SAFETY</div>
+                    <div class="ticker-item"><span class="dot"></span> MTTR BENCHMARK: &lt; 42s AUTOMATED ROLLBACK</div>
+                    <div class="ticker-item"><span class="dot"></span> K8S INGRESS: ZERO PACKET LOSS</div>
+                    <div class="ticker-item"><span class="dot"></span> RUNBOOK CORPUS: 1,420 INCIDENT PATTERNS INDEXED</div>
+                    <div class="ticker-item"><span class="dot"></span> PROD-EU-CENTRAL-1: HEALTHY</div>
+                    <!-- Seamless loop duplicate -->
+                    <div class="ticker-item"><span class="dot"></span> PROD-US-EAST-1: ACTIVE</div>
+                    <div class="ticker-item"><span class="dot"></span> HYBRID RAG: BM25 + VECTORS READY</div>
+                    <div class="ticker-item"><span class="dot"></span> GITOPS GUARDRAILS: ENFORCING SCHEMA SAFETY</div>
+                    <div class="ticker-item"><span class="dot"></span> MTTR BENCHMARK: &lt; 42s AUTOMATED ROLLBACK</div>
+                    <div class="ticker-item"><span class="dot"></span> K8S INGRESS: ZERO PACKET LOSS</div>
+                    <div class="ticker-item"><span class="dot"></span> RUNBOOK CORPUS: 1,420 INCIDENT PATTERNS INDEXED</div>
+                    <div class="ticker-item"><span class="dot"></span> PROD-EU-CENTRAL-1: HEALTHY</div>
                 </div>
             </div>
-        </section>
 
-        <!-- Real-Time Metrics & Reliability Stats -->
-        <div class="stats-banner">
-            <div class="stats-item">
-                <div class="stat-num" data-target="99.99" data-suffix="%">0%</div>
-                <div class="stat-label">Production SLA Uptime</div>
-            </div>
-            <div class="stats-item">
-                <div class="stat-num" data-target="38" data-suffix="s">0s</div>
-                <div class="stat-label">Avg Autonomous MTTR</div>
-            </div>
-            <div class="stats-item">
-                <div class="stat-num" data-target="100" data-suffix="%">0%</div>
-                <div class="stat-label">Migration Guardrail Safety</div>
-            </div>
-            <div class="stats-item">
-                <div class="stat-num" data-target="15" data-prefix="&lt;" data-suffix="ms">&lt;0ms</div>
-                <div class="stat-label">Zero-Touch Pipeline Latency</div>
-            </div>
-        </div>
+            <!-- Core Services & Capabilities: Premium Frosted Glassmorphism -->
+            <section id="services">
+                <div class="section-header">
+                    <div class="section-badge">⚡ Core Services</div>
+                    <h2 class="section-title">Built for Zero-Touch Reliability</h2>
+                    <p class="section-desc">Engineered for modern SRE teams who can't afford manual incident response. Every service operates autonomously, end-to-end.</p>
+                </div>
 
-        <!-- How It Works Section -->
-        <section id="how-it-works">
-            <div class="section-header">
-                <div class="section-badge">How It Works</div>
-                <h2 class="section-title">Autonomous Incident Flow</h2>
-                <p class="section-desc">From crash alert to verified rollback in under a minute — completely hands-free.</p>
-            </div>
-            <div class="workflow-box">
-                <div class="workflow-grid">
-                    <div>
-                        <div class="step-number">1</div>
-                        <h4 class="step-title">Crash Alert Ingestion</h4>
-                        <p class="step-desc">Webhooks from Sentry, Datadog, Prometheus, or CloudWatch send structured stack traces and breaking commit metadata to your project endpoint.</p>
+                <div class="services-grid">
+                    <!-- Service 1: Hybrid RAG RCA -->
+                    <div class="service-card tilt-card">
+                        <div class="service-card-top">
+                            <div class="service-icon-box glow-violet">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/>
+                                </svg>
+                            </div>
+                            <span class="card-micro-chip">BM25 + VECTORS</span>
+                        </div>
+                        <h3 class="service-name">Hybrid RAG RCA Engine</h3>
+                        <p class="service-detail">Combines <strong>Sparse BM25</strong> lexical matching and <strong>Dense Vector search</strong> over operational runbooks, past incident post-mortems, and Git commit diffs to pinpoint exact breaking changes in seconds.</p>
                     </div>
 
-                    <div>
-                        <div class="step-number">2</div>
-                        <h4 class="step-title">RAG Root Cause Analysis</h4>
-                        <p class="step-desc">The AI copilot extracts Git diffs, retrieves relevant SOPs via Reciprocal Rank Fusion, and outputs a detailed RCA with a confidence score.</p>
+                    <!-- Service 2: Enterprise Guardrails -->
+                    <div class="service-card tilt-card">
+                        <div class="service-card-top">
+                            <div class="service-icon-box glow-emerald">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                    <path d="M9 12l2 2 4-4"/>
+                                </svg>
+                            </div>
+                            <span class="card-micro-chip">SCHEMA SAFETY</span>
+                        </div>
+                        <h3 class="service-name">Enterprise Guardrails</h3>
+                        <p class="service-detail">Automatically detects <strong>database schema migrations</strong> (Alembic, Prisma, Flyway) and enforces anti-flapping thresholds to halt destructive automated rollbacks that could cause irreversible data loss.</p>
                     </div>
 
-                    <div>
-                        <div class="step-number">3</div>
-                        <h4 class="step-title">Safety Guardrail Check</h4>
-                        <p class="step-desc">Evaluates commit files against schema migration patterns and anti-flapping rate limits to guarantee code reversion is 100% safe before proceeding.</p>
+                    <!-- Service 3: Autonomous GitOps Rollback -->
+                    <div class="service-card tilt-card">
+                        <div class="service-card-top">
+                            <div class="service-icon-box glow-amber">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                </svg>
+                            </div>
+                            <span class="card-micro-chip">&lt; 42s MTTR</span>
+                        </div>
+                        <h3 class="service-name">Autonomous GitOps Rollback</h3>
+                        <p class="service-detail">Directly dispatches <strong>GitHub Actions workflows</strong> to redeploy the last verified stable commit SHA the instant a P0/P1 incident clears safety filters, cutting MTTR by <strong>40x</strong>.</p>
                     </div>
 
-                    <div>
-                        <div class="step-number">4</div>
-                        <h4 class="step-title">Autonomous GitHub Rollback</h4>
-                        <p class="step-desc">Dispatches your deployment workflow with the target stable SHA, polls the healthz endpoint, and notifies your Slack or Discord channels.</p>
+                    <!-- Service 4: Health Verification -->
+                    <div class="service-card tilt-card">
+                        <div class="service-card-top">
+                            <div class="service-icon-box glow-cyan">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                </svg>
+                            </div>
+                            <span class="card-micro-chip">HEALTH CHECKS</span>
+                        </div>
+                        <h3 class="service-name">Health Verification</h3>
+                        <p class="service-detail">Actively polls target application <strong><code>/healthz</code> endpoints</strong> post-rollback across multi-region endpoints, guaranteeing full system recovery before resolving the incident.</p>
+                    </div>
+
+                    <!-- Service 5: Multi-Source Ingestion -->
+                    <div class="service-card tilt-card">
+                        <div class="service-card-top">
+                            <div class="service-icon-box glow-rose">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                    <path d="M4.93 4.93a10 10 0 0 1 14.14 0M7.76 7.76a6 6 0 0 1 8.48 0M12 12h.01"/>
+                                    <circle cx="12" cy="12" r="1.5"/>
+                                </svg>
+                            </div>
+                            <span class="card-micro-chip">UNIVERSAL WEBHOOKS</span>
+                        </div>
+                        <h3 class="service-name">Multi-Source Ingestion</h3>
+                        <p class="service-detail">Accepts structured crash telemetry and alerts from <strong>Sentry, Datadog, Prometheus, AWS CloudWatch</strong>, and custom monitoring stacks via an isolated, rate-limited webhook receiver.</p>
+                    </div>
+
+                    <!-- Service 6: Secure Multi-Tenant Isolation -->
+                    <div class="service-card tilt-card">
+                        <div class="service-card-top">
+                            <div class="service-icon-box glow-indigo">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                </svg>
+                            </div>
+                            <span class="card-micro-chip">ZERO DATA LEAK</span>
+                        </div>
+                        <h3 class="service-name">Secure Multi-Tenant Isolation</h3>
+                        <p class="service-detail">Every monitored repository operates in full logical isolation. <strong>PII, auth tokens, and secrets</strong> are automatically redacted from error traces before reaching LLM inference engines.</p>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Architecture Section -->
-        <section id="architecture">
-            <div class="section-header">
-                <div class="section-badge">Platform Architecture</div>
-                <h2 class="section-title">Fully Decoupled Pipeline</h2>
-                <p class="section-desc">Multi-tenant incident response with zero data leakage and enterprise-grade PII redaction.</p>
-            </div>
-
-            <div class="arch-diagram">
-                <div class="arch-node">
-                    <div class="arch-node-title">📡 Crash Webhook</div>
-                    <div class="arch-node-sub">Sentry / Prometheus</div>
+            <!-- Real-Time Metrics & Reliability Stats: Glass HUD -->
+            <div class="stats-banner">
+                <div class="stats-item">
+                    <div class="stat-num" data-target="99.99" data-suffix="%">0%</div>
+                    <div class="stat-label">Production SLA Uptime</div>
                 </div>
-                <div class="arch-arrow">&rarr;</div>
-                <div class="arch-node">
-                    <div class="arch-node-title">🔒 Log Sanitizer</div>
-                    <div class="arch-node-sub">PII &amp; Secret Redaction</div>
+                <div class="stats-item">
+                    <div class="stat-num" data-target="38" data-suffix="s">0s</div>
+                    <div class="stat-label">Avg Autonomous MTTR</div>
                 </div>
-                <div class="arch-arrow">&rarr;</div>
-                <div class="arch-node">
-                    <div class="arch-node-title">🧠 Hybrid RAG + LLM</div>
-                    <div class="arch-node-sub">BM25 + Vector Search</div>
+                <div class="stats-item">
+                    <div class="stat-num" data-target="100" data-suffix="%">0%</div>
+                    <div class="stat-label">Migration Guardrail Safety</div>
                 </div>
-                <div class="arch-arrow">&rarr;</div>
-                <div class="arch-node">
-                    <div class="arch-node-title">🛡️ Safety Guardrails</div>
-                    <div class="arch-node-sub">DB Migration Check</div>
-                </div>
-                <div class="arch-arrow">&rarr;</div>
-                <div class="arch-node">
-                    <div class="arch-node-title">🚀 GitOps Rollback</div>
-                    <div class="arch-node-sub">GitHub Actions Dispatch</div>
+                <div class="stats-item">
+                    <div class="stat-num" data-target="15" data-prefix="&lt;" data-suffix="ms">&lt;0ms</div>
+                    <div class="stat-label">Zero-Touch Pipeline Latency</div>
                 </div>
             </div>
-        </section>
 
-        <!-- Bottom CTA -->
-        <section class="bottom-cta">
-            <h2>Ready to eliminate midnight outage fires?</h2>
-            <p>Set up your first project in 30 seconds. Connect your GitHub repository and let SRE Copilot handle every incident — autonomously.</p>
-            <button type="button" class="btn-lg" style="background: #ffffff !important; color: #0e0b16 !important; border-color: #ffffff; font-weight: 700;" onclick="openAuthModal('signup')">
-                Get Started Free &rarr;
-            </button>
-        </section>
-    </main>
+            <!-- How It Works Section: Glass Pipeline -->
+            <section id="how-it-works">
+                <div class="section-header">
+                    <div class="section-badge">🚀 How It Works</div>
+                    <h2 class="section-title">Autonomous Incident Flow</h2>
+                    <p class="section-desc">From crash alert to verified rollback in under a minute — completely hands-free.</p>
+                </div>
+                <div class="workflow-box">
+                    <div class="workflow-grid">
+                        <div class="step-card">
+                            <div class="step-number">01</div>
+                            <h4 class="step-title">Crash Alert Ingestion</h4>
+                            <p class="step-desc">Webhooks from Sentry, Datadog, Prometheus, or CloudWatch send structured stack traces and breaking commit metadata to your project endpoint.</p>
+                        </div>
+
+                        <div class="step-card">
+                            <div class="step-number">02</div>
+                            <h4 class="step-title">RAG Root Cause Analysis</h4>
+                            <p class="step-desc">The AI copilot extracts Git diffs, retrieves relevant SOPs via Reciprocal Rank Fusion, and outputs a detailed RCA with a confidence score.</p>
+                        </div>
+
+                        <div class="step-card">
+                            <div class="step-number">03</div>
+                            <h4 class="step-title">Safety Guardrail Check</h4>
+                            <p class="step-desc">Evaluates commit files against schema migration patterns and anti-flapping rate limits to guarantee code reversion is 100% safe before proceeding.</p>
+                        </div>
+
+                        <div class="step-card">
+                            <div class="step-number">04</div>
+                            <h4 class="step-title">Autonomous GitHub Rollback</h4>
+                            <p class="step-desc">Dispatches your deployment workflow with the target stable SHA, polls the healthz endpoint, and notifies your Slack or Discord channels.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Architecture Section: Floating Glass Pods -->
+            <section id="architecture">
+                <div class="section-header">
+                    <div class="section-badge">🏛️ Architecture</div>
+                    <h2 class="section-title">Fully Decoupled Pipeline</h2>
+                    <p class="section-desc">Multi-tenant incident response with zero data leakage and enterprise-grade PII redaction.</p>
+                </div>
+
+                <div class="arch-diagram">
+                    <div class="arch-node">
+                        <div class="arch-node-title">📡 Crash Webhook</div>
+                        <div class="arch-node-sub">Sentry / Prometheus</div>
+                    </div>
+                    <div class="arch-arrow">&rarr;</div>
+                    <div class="arch-node">
+                        <div class="arch-node-title">🔒 Log Sanitizer</div>
+                        <div class="arch-node-sub">PII &amp; Secret Redaction</div>
+                    </div>
+                    <div class="arch-arrow">&rarr;</div>
+                    <div class="arch-node">
+                        <div class="arch-node-title">🧠 Hybrid RAG + LLM</div>
+                        <div class="arch-node-sub">BM25 + Vector Search</div>
+                    </div>
+                    <div class="arch-arrow">&rarr;</div>
+                    <div class="arch-node">
+                        <div class="arch-node-title">🛡️ Safety Guardrails</div>
+                        <div class="arch-node-sub">DB Migration Check</div>
+                    </div>
+                    <div class="arch-arrow">&rarr;</div>
+                    <div class="arch-node">
+                        <div class="arch-node-title">🚀 GitOps Rollback</div>
+                        <div class="arch-node-sub">GitHub Actions Dispatch</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bottom CTA: Chromatic Glass Showcase -->
+            <section class="bottom-cta">
+                <h2>Ready to eliminate midnight outage fires?</h2>
+                <p>Set up your first project in 30 seconds. Connect your GitHub repository and let SRE Copilot handle every incident — autonomously.</p>
+                <button type="button" class="btn-weaverly-white btn-lg" onclick="openAuthModal('signup')">
+                    Get Started Free &rarr;
+                </button>
+            </section>
+        </main>
+    </div>
 
 
     <!-- ----------------------------------------------------------------- -->
