@@ -50,8 +50,11 @@ class GoogleAuthPayload(BaseModel):
 
 class OTPSendPayload(BaseModel):
     email: str
-    purpose: str = "member_login"  # "member_login" or "admin_login"
+    purpose: str = "member_login"  # "member_login", "member_signup", or "admin_login"
     admin_key: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    organisation: Optional[str] = None
 
 class OTPVerifyPayload(BaseModel):
     email: str
@@ -59,6 +62,9 @@ class OTPVerifyPayload(BaseModel):
     name: Optional[str] = None
     purpose: str = "member_login"
     admin_key: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    organisation: Optional[str] = None
 
 class DemoLoginPayload(BaseModel):
     email: Optional[str] = None
@@ -503,10 +509,21 @@ async def verify_otp(payload: OTPVerifyPayload, response: Response):
 
     else:
         sub_id = f"user_{hashlib.md5(email.encode()).hexdigest()[:10]}"
+        first_name = (payload.first_name or "").strip() or None
+        last_name = (payload.last_name or "").strip() or None
+        organisation = (payload.organisation or "").strip() or None
+        if first_name or last_name:
+            name = f"{first_name or ''} {last_name or ''}".strip()
+        else:
+            name = payload.name or email.split("@")[0]
+
         user = UserRepository.get_or_create_user(
             sub_id=sub_id,
             email=email,
             name=name,
+            first_name=first_name,
+            last_name=last_name,
+            organisation=organisation,
             picture="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
         )
         response.set_cookie(

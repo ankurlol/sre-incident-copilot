@@ -3,7 +3,7 @@ import time
 import uuid
 import re
 from typing import List, Optional, Dict, Any
-from sqlalchemy import text
+from sqlalchemy import text, inspect
 from sqlalchemy.orm import Session
 from src.db.models import IncidentModel, UserModel, ProjectModel, OTPModel
 from src.db.database import Base, engine, SessionLocal
@@ -11,11 +11,21 @@ from src.db.database import Base, engine, SessionLocal
 # Initialize tables (auto-provisions projects, users, incidents)
 Base.metadata.create_all(bind=engine)
 
-# Safe auto-migration for role column if table already existed
+# Safe auto-migration for role, first_name, last_name, and organisation columns if table already existed
 try:
-    with engine.connect() as conn:
-        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'user';"))
-        conn.commit()
+    inspector = inspect(engine)
+    if "users" in inspector.get_table_names():
+        existing_cols = [c["name"] for c in inspector.get_columns("users")]
+        with engine.connect() as conn:
+            if "role" not in existing_cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'user';"))
+            if "first_name" not in existing_cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN first_name VARCHAR(100);"))
+            if "last_name" not in existing_cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN last_name VARCHAR(100);"))
+            if "organisation" not in existing_cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN organisation VARCHAR(255);"))
+            conn.commit()
 except Exception:
     pass
 
@@ -303,7 +313,15 @@ class IncidentRepository:
 
 class UserRepository:
     @staticmethod
-    def get_or_create_user(sub_id: str, email: str, name: str = "SRE Engineer", picture: Optional[str] = None) -> Dict[str, Any]:
+    def get_or_create_user(
+        sub_id: str,
+        email: str,
+        name: str = "SRE Engineer",
+        picture: Optional[str] = None,
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
+        organisation: Optional[str] = None
+    ) -> Dict[str, Any]:
         db = SessionLocal()
         try:
             user = db.query(UserModel).filter((UserModel.id == sub_id) | (UserModel.email == email)).first()
@@ -313,10 +331,16 @@ class UserRepository:
                 is_initial_admin = (total_users == 0) or (bool(admin_email) and email.strip().lower() == admin_email)
                 role = "admin" if is_initial_admin else "user"
 
+                if first_name or last_name:
+                    name = f"{first_name or ''} {last_name or ''}".strip() or name
+
                 user = UserModel(
                     id=sub_id,
                     email=email,
                     name=name,
+                    first_name=first_name,
+                    last_name=last_name,
+                    organisation=organisation,
                     picture=picture,
                     role=role
                 )
@@ -327,7 +351,15 @@ class UserRepository:
                 admin_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
                 if admin_email and email.strip().lower() == admin_email and user.role != "admin":
                     user.role = "admin"
-                if name and user.name != name:
+                if first_name:
+                    user.first_name = first_name
+                if last_name:
+                    user.last_name = last_name
+                if organisation:
+                    user.organisation = organisation
+                if first_name or last_name:
+                    user.name = f"{user.first_name or ''} {user.last_name or ''}".strip() or user.name
+                elif name and user.name != name:
                     user.name = name
                 if picture and user.picture != picture:
                     user.picture = picture
@@ -445,6 +477,9 @@ class UserRepository:
             "id": user.id,
             "email": user.email,
             "name": user.name,
+            "first_name": getattr(user, "first_name", None),
+            "last_name": getattr(user, "last_name", None),
+            "organisation": getattr(user, "organisation", None),
             "picture": user.picture,
             "role": role,
             "is_admin": (role == "admin"),

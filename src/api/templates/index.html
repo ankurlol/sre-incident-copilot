@@ -707,10 +707,10 @@
             </ul>
 
             <div class="nav-auth">
-                <button type="button" class="btn-outline" onclick="openAuthModal()">
+                <button type="button" class="btn-outline" onclick="openAuthModal('signin')">
                     Sign In
                 </button>
-                <button type="button" onclick="openAuthModal()">
+                <button type="button" onclick="openAuthModal('signup')">
                     Get Started &rarr;
                 </button>
             </div>
@@ -756,12 +756,12 @@
             </p>
 
             <div class="hero-cta">
-                <button type="button" class="btn-lg" onclick="openAuthModal()">
-                    Get Started with Google &rarr;
+                <button type="button" class="btn-lg" onclick="openAuthModal('signup')">
+                    Create Account &rarr;
                 </button>
-                <a href="#how-it-works" class="btn btn-lg btn-outline">
-                    Explore Architecture
-                </a>
+                <button type="button" class="btn-lg btn-outline" onclick="openAuthModal('signin')">
+                    Sign In
+                </button>
             </div>
         </section>
 
@@ -1026,45 +1026,90 @@
         <div class="modal">
             <div class="modal-header">
                 <div>
-                    <h3 class="modal-title">Sign In to SRE Copilot</h3>
-                    <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">Connect to manage your autonomous service reliability</p>
+                    <h3 class="modal-title" id="modalMainTitle">Sign In to SRE Copilot</h3>
+                    <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;" id="modalSubTitle">Connect to manage your autonomous service reliability</p>
                 </div>
                 <button type="button" class="close-btn" onclick="closeAuthModal()">&times;</button>
             </div>
 
-            {% if google_client_id %}
-            <div style="display: flex; justify-content: center; margin-bottom: 14px;">
-                <div id="g_id_onload"
-                     data-client_id="{{ google_client_id }}"
-                     data-callback="handleGoogleSignIn"
-                     data-auto_prompt="false">
-                </div>
-                <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="signin_with" data-shape="rectangular" data-width="380"></div>
+            <!-- Tab Switcher -->
+            <div id="authTabSwitcher" style="display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; gap: 4px;">
+                <button type="button" id="authTabSignIn" class="btn-outline" style="flex: 1; border-radius: 6px 6px 0 0; border-bottom: none; font-size: 13.5px; padding: 10px; background: #ffffff !important; color: #000000 !important; font-weight: 700; border-color: #000000;" onclick="switchAuthTab('signin')">
+                    Sign In
+                </button>
+                <button type="button" id="authTabSignUp" class="btn-outline" style="flex: 1; border-radius: 6px 6px 0 0; border-bottom: none; font-size: 13.5px; padding: 10px; background: #f8fafc !important; color: var(--text-muted) !important; font-weight: 600; border-color: transparent;" onclick="switchAuthTab('signup')">
+                    Create Account (Sign Up)
+                </button>
             </div>
-            <div class="divider">
-                <span>or authenticate via email otp</span>
-            </div>
-            {% endif %}
 
-            <!-- Member Step 1: Enter Email & Name -->
-            <div id="memberOtpStep1">
+            <!-- TAB 1: SIGN IN CONTENT -->
+            <div id="authSignInContent">
+                {% if google_client_id %}
+                <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+                    <div id="g_id_onload"
+                         data-client_id="{{ google_client_id }}"
+                         data-callback="handleGoogleSignIn"
+                         data-auto_prompt="false">
+                    </div>
+                    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="signin_with" data-shape="rectangular" data-width="380"></div>
+                </div>
+                <div class="divider">
+                    <span>or sign in via email code</span>
+                </div>
+                {% endif %}
+
                 <form onsubmit="handleMemberSendOTP(event)">
                     <div class="form-group">
                         <label>Work or Personal Email</label>
                         <input type="email" id="login_email" placeholder="e.g. dev@company.com" required>
                     </div>
 
-                    <div class="form-group">
-                        <label>Full Name (Optional)</label>
-                        <input type="text" id="login_name" placeholder="e.g. Alex Rivera">
-                    </div>
-
                     <div id="authStatus1" class="connection-status"></div>
 
-                    <button type="submit" id="emailSendOtpBtn" style="width: 100%; padding: 11px; font-size: 14px;">
+                    <button type="submit" id="emailSendOtpBtn" style="width: 100%; padding: 11px; font-size: 14px; margin-bottom: 14px;">
                         Send Verification Code &rarr;
                     </button>
                 </form>
+
+                <div style="text-align: center; font-size: 12.5px; color: var(--text-muted); padding-top: 10px; border-top: 1px solid var(--border);">
+                    New to SRE Copilot? <a href="javascript:void(0)" onclick="switchAuthTab('signup')" style="color: #000; font-weight: 700; text-decoration: underline;">Create an account</a>
+                </div>
+            </div>
+
+            <!-- TAB 2: SIGN UP CONTENT (First Name, Last Name, Email, Organisation) -->
+            <div id="authSignUpContent" style="display: none;">
+                <form onsubmit="handleMemberSignUp(event)">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px;">First Name</label>
+                            <input type="text" id="signup_first_name" placeholder="e.g. Alex" style="width: 100%; padding: 10px 12px; font-size: 13.5px; border: 1px solid var(--border-dark); border-radius: 6px; outline: none;" required>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px;">Last Name</label>
+                            <input type="text" id="signup_last_name" placeholder="e.g. Rivera" style="width: 100%; padding: 10px 12px; font-size: 13.5px; border: 1px solid var(--border-dark); border-radius: 6px; outline: none;" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Work Email Address</label>
+                        <input type="email" id="signup_email" placeholder="alex@company.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Organisation / Company Name</label>
+                        <input type="text" id="signup_org" placeholder="e.g. Acme Corp / Cloud Platform Team" required>
+                    </div>
+
+                    <div id="authStatusSignUp" class="connection-status"></div>
+
+                    <button type="submit" id="signupSubmitBtn" style="width: 100%; padding: 11px; font-size: 14px; margin-bottom: 14px;">
+                        Create Account & Send Code &rarr;
+                    </button>
+                </form>
+
+                <div style="text-align: center; font-size: 12.5px; color: var(--text-muted); padding-top: 10px; border-top: 1px solid var(--border);">
+                    Already have an account? <a href="javascript:void(0)" onclick="switchAuthTab('signin')" style="color: #000; font-weight: 700; text-decoration: underline;">Sign in</a>
+                </div>
             </div>
 
             <!-- Member Step 2: Enter 6-digit OTP -->
@@ -1083,12 +1128,12 @@
                     <div id="authStatus2" class="connection-status"></div>
 
                     <button type="submit" id="memberVerifyBtn" style="width: 100%; padding: 11px; font-size: 14px; margin-bottom: 10px;">
-                        Verify & Sign In &rarr;
+                        Verify & Enter Platform &rarr;
                     </button>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
                         <button type="button" class="btn-outline" style="font-size: 11px; padding: 6px 12px;" onclick="switchMemberToStep1()">
-                            &larr; Change Email
+                            &larr; Back
                         </button>
                         <button type="button" class="btn-outline" style="font-size: 11px; padding: 6px 12px;" onclick="resendMemberOTP()">
                             ↻ Resend Code
@@ -1170,12 +1215,68 @@
         }
 
         // Modal Open / Close Handlers
-        function openAuthModal() {
+        let activeAuthMode = 'signin';
+        let activeMemberEmail = '';
+        let activeMemberFirstName = '';
+        let activeMemberLastName = '';
+        let activeMemberOrg = '';
+
+        function openAuthModal(mode = 'signin') {
             document.getElementById('authModal').style.display = 'flex';
+            switchAuthTab(mode);
         }
 
         function closeAuthModal() {
             document.getElementById('authModal').style.display = 'none';
+        }
+
+        function switchAuthTab(tab) {
+            activeAuthMode = tab;
+            const tabSignIn = document.getElementById('authTabSignIn');
+            const tabSignUp = document.getElementById('authTabSignUp');
+            const contentSignIn = document.getElementById('authSignInContent');
+            const contentSignUp = document.getElementById('authSignUpContent');
+            const step2 = document.getElementById('memberOtpStep2');
+            const mainTitle = document.getElementById('modalMainTitle');
+            const subTitle = document.getElementById('modalSubTitle');
+
+            if (step2) step2.style.display = 'none';
+
+            if (tab === 'signup') {
+                if (tabSignUp) {
+                    tabSignUp.style.setProperty('background', '#ffffff', 'important');
+                    tabSignUp.style.setProperty('color', '#000000', 'important');
+                    tabSignUp.style.borderColor = '#000000';
+                    tabSignUp.style.fontWeight = '700';
+                }
+                if (tabSignIn) {
+                    tabSignIn.style.setProperty('background', '#f8fafc', 'important');
+                    tabSignIn.style.setProperty('color', 'var(--text-muted)', 'important');
+                    tabSignIn.style.borderColor = 'transparent';
+                    tabSignIn.style.fontWeight = '600';
+                }
+                if (contentSignIn) contentSignIn.style.display = 'none';
+                if (contentSignUp) contentSignUp.style.display = 'block';
+                if (mainTitle) mainTitle.innerText = 'Create SRE Copilot Account';
+                if (subTitle) subTitle.innerText = 'Start autonomous incident remediation for your fleet';
+            } else {
+                if (tabSignIn) {
+                    tabSignIn.style.setProperty('background', '#ffffff', 'important');
+                    tabSignIn.style.setProperty('color', '#000000', 'important');
+                    tabSignIn.style.borderColor = '#000000';
+                    tabSignIn.style.fontWeight = '700';
+                }
+                if (tabSignUp) {
+                    tabSignUp.style.setProperty('background', '#f8fafc', 'important');
+                    tabSignUp.style.setProperty('color', 'var(--text-muted)', 'important');
+                    tabSignUp.style.borderColor = 'transparent';
+                    tabSignUp.style.fontWeight = '600';
+                }
+                if (contentSignIn) contentSignIn.style.display = 'block';
+                if (contentSignUp) contentSignUp.style.display = 'none';
+                if (mainTitle) mainTitle.innerText = 'Sign In to SRE Copilot';
+                if (subTitle) subTitle.innerText = 'Connect to manage your autonomous service reliability';
+            }
         }
 
         function openCreateProjectModal() {
@@ -1231,22 +1332,16 @@
             }
         }
 
-        let activeMemberEmail = '';
-        let activeMemberName = '';
-
-        // Send Member OTP
+        // Send Member Sign In OTP
         async function handleMemberSendOTP(event) {
             if (event) event.preventDefault();
             const emailInput = document.getElementById('login_email');
-            const nameInput = document.getElementById('login_name');
-            const email = emailInput.value.trim();
-            const name = nameInput.value.trim();
+            const email = emailInput ? emailInput.value.trim() : '';
             const btn = document.getElementById('emailSendOtpBtn');
             const statusDiv = document.getElementById('authStatus1');
 
             if (!email) return;
             activeMemberEmail = email;
-            activeMemberName = name;
 
             btn.disabled = true;
             btn.innerText = 'Dispatching Code...';
@@ -1260,7 +1355,8 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    document.getElementById('memberOtpStep1').style.display = 'none';
+                    document.getElementById('authSignInContent').style.display = 'none';
+                    document.getElementById('authSignUpContent').style.display = 'none';
                     document.getElementById('memberOtpStep2').style.display = 'block';
                     document.getElementById('memberTargetEmail').innerText = email;
                     document.getElementById('member_otp_code').value = '';
@@ -1295,7 +1391,90 @@
             }
         }
 
-        // Verify Member OTP
+        // Send Member Sign Up OTP (First Name, Last Name, Email, Organisation)
+        async function handleMemberSignUp(event) {
+            if (event) event.preventDefault();
+            const firstName = (document.getElementById('signup_first_name') ? document.getElementById('signup_first_name').value : '').trim();
+            const lastName = (document.getElementById('signup_last_name') ? document.getElementById('signup_last_name').value : '').trim();
+            const email = (document.getElementById('signup_email') ? document.getElementById('signup_email').value : '').trim();
+            const org = (document.getElementById('signup_org') ? document.getElementById('signup_org').value : '').trim();
+            const btn = document.getElementById('signupSubmitBtn');
+            const statusDiv = document.getElementById('authStatusSignUp');
+
+            if (!firstName || !lastName || !email || !org) {
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = '#fef2f2';
+                statusDiv.style.color = '#dc2626';
+                statusDiv.style.border = '1px solid #fecaca';
+                statusDiv.style.padding = '10px';
+                statusDiv.style.borderRadius = '6px';
+                statusDiv.style.fontSize = '12.5px';
+                statusDiv.style.marginBottom = '12px';
+                statusDiv.style.textAlign = 'center';
+                statusDiv.innerText = 'Please provide First Name, Last Name, Email, and Organisation.';
+                return;
+            }
+
+            activeMemberEmail = email;
+            activeMemberFirstName = firstName;
+            activeMemberLastName = lastName;
+            activeMemberOrg = org;
+
+            btn.disabled = true;
+            btn.innerText = 'Dispatching Verification Code...';
+            statusDiv.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/v1/auth/otp/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        purpose: 'member_signup',
+                        first_name: firstName,
+                        last_name: lastName,
+                        organisation: org
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('authSignUpContent').style.display = 'none';
+                    document.getElementById('authSignInContent').style.display = 'none';
+                    document.getElementById('memberOtpStep2').style.display = 'block';
+                    document.getElementById('memberTargetEmail').innerText = email;
+                    document.getElementById('member_otp_code').value = '';
+                    setTimeout(() => document.getElementById('member_otp_code').focus(), 100);
+                } else {
+                    statusDiv.style.display = 'block';
+                    statusDiv.style.background = '#fef2f2';
+                    statusDiv.style.color = '#dc2626';
+                    statusDiv.style.border = '1px solid #fecaca';
+                    statusDiv.style.padding = '10px';
+                    statusDiv.style.borderRadius = '6px';
+                    statusDiv.style.fontSize = '12.5px';
+                    statusDiv.style.marginBottom = '12px';
+                    statusDiv.style.textAlign = 'center';
+                    statusDiv.innerText = data.error || 'Failed to dispatch verification code.';
+                    btn.disabled = false;
+                    btn.innerText = 'Create Account & Send Code →';
+                }
+            } catch (err) {
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = '#fef2f2';
+                statusDiv.style.color = '#dc2626';
+                statusDiv.style.border = '1px solid #fecaca';
+                statusDiv.style.padding = '10px';
+                statusDiv.style.borderRadius = '6px';
+                statusDiv.style.fontSize = '12.5px';
+                statusDiv.style.marginBottom = '12px';
+                statusDiv.style.textAlign = 'center';
+                statusDiv.innerText = 'Network error: ' + err.message;
+                btn.disabled = false;
+                btn.innerText = 'Create Account & Send Code →';
+            }
+        }
+
+        // Verify Member OTP (Supports both Sign In and Sign Up)
         async function handleMemberVerifyOTP(event) {
             if (event) event.preventDefault();
             const code = document.getElementById('member_otp_code').value.trim();
@@ -1303,7 +1482,15 @@
             const statusDiv = document.getElementById('authStatus2');
 
             if (!code || code.length !== 6) {
-                statusDiv.className = 'connection-status error';
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = '#fef2f2';
+                statusDiv.style.color = '#dc2626';
+                statusDiv.style.border = '1px solid #fecaca';
+                statusDiv.style.padding = '10px';
+                statusDiv.style.borderRadius = '6px';
+                statusDiv.style.fontSize = '12.5px';
+                statusDiv.style.marginBottom = '12px';
+                statusDiv.style.textAlign = 'center';
                 statusDiv.innerText = 'Please enter a valid 6-digit verification code.';
                 return;
             }
@@ -1321,8 +1508,10 @@
                     body: JSON.stringify({
                         email: email,
                         code: code,
-                        name: activeMemberName || undefined,
-                        purpose: 'member_login'
+                        purpose: activeAuthMode === 'signup' ? 'member_signup' : 'member_login',
+                        first_name: activeMemberFirstName || undefined,
+                        last_name: activeMemberLastName || undefined,
+                        organisation: activeMemberOrg || undefined
                     })
                 });
                 const data = await res.json();
@@ -1341,7 +1530,7 @@
                     statusDiv.style.textAlign = 'center';
                     statusDiv.innerText = data.error || 'Verification failed.';
                     btn.disabled = false;
-                    btn.innerText = 'Verify & Sign In →';
+                    btn.innerText = 'Verify & Enter Platform →';
                 }
             } catch (err) {
                 statusDiv.style.display = 'block';
@@ -1355,20 +1544,29 @@
                 statusDiv.style.textAlign = 'center';
                 statusDiv.innerText = 'Network error: ' + err.message;
                 btn.disabled = false;
-                btn.innerText = 'Verify & Sign In →';
+                btn.innerText = 'Verify & Enter Platform →';
             }
         }
 
         function switchMemberToStep1() {
             document.getElementById('memberOtpStep2').style.display = 'none';
-            document.getElementById('memberOtpStep1').style.display = 'block';
-            const btn = document.getElementById('emailSendOtpBtn');
-            btn.disabled = false;
-            btn.innerText = 'Send Verification Code →';
+            if (activeAuthMode === 'signup') {
+                document.getElementById('authSignUpContent').style.display = 'block';
+                const btn = document.getElementById('signupSubmitBtn');
+                if (btn) { btn.disabled = false; btn.innerText = 'Create Account & Send Code →'; }
+            } else {
+                document.getElementById('authSignInContent').style.display = 'block';
+                const btn = document.getElementById('emailSendOtpBtn');
+                if (btn) { btn.disabled = false; btn.innerText = 'Send Verification Code →'; }
+            }
         }
 
         function resendMemberOTP() {
-            handleMemberSendOTP();
+            if (activeAuthMode === 'signup') {
+                handleMemberSignUp();
+            } else {
+                handleMemberSendOTP();
+            }
         }
 
         // Sign Out
@@ -1548,11 +1746,13 @@
                 alert('Network error: ' + e.message);
             }
         }
-        // Auto-open Auth Modal if open_auth=true in URL
+        // Auto-open Auth Modal if open_auth=true or open_signup=true in URL
         window.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
-            if (params.get('open_auth') === 'true') {
-                openAuthModal();
+            if (params.get('open_signup') === 'true') {
+                openAuthModal('signup');
+            } else if (params.get('open_auth') === 'true') {
+                openAuthModal('signin');
             }
         });
     </script>

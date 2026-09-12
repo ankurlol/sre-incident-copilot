@@ -61,6 +61,9 @@ class UserModel(Base):
     id = Column(String(100), primary_key=True, index=True) # Google sub or unique user id
     email = Column(String(255), unique=True, index=True, nullable=False)
     name = Column(String(255), default="SRE Engineer")
+    first_name = Column(String(100), nullable=True)
+    last_name = Column(String(100), nullable=True)
+    organisation = Column(String(255), nullable=True)
     picture = Column(String(500), nullable=True)
     role = Column(String(50), default="user") # 'admin' or 'user'
     created_at = Column(String(50), default=lambda: time.strftime("%Y-%m-%d %H:%M:%S"))
