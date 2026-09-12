@@ -48,6 +48,16 @@ class AlertPayload(BaseModel):
 class GoogleAuthPayload(BaseModel):
     credential: str
 
+class SocialDirectPayload(BaseModel):
+    provider: str  # "google" or "github"
+    email: str
+    name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    organisation: Optional[str] = None
+    github_username: Optional[str] = None
+    picture: Optional[str] = None
+
 class OTPSendPayload(BaseModel):
     email: str
     purpose: str = "member_login"  # "member_login", "member_signup", or "admin_login"
@@ -215,6 +225,7 @@ async def dashboard(request: Request):
                 "active_project": None,
                 "incidents": [],
                 "google_client_id": os.getenv("GOOGLE_CLIENT_ID", ""),
+                "github_client_id": os.getenv("GITHUB_CLIENT_ID", ""),
                 "auto_rollback_enabled": settings.AUTO_ROLLBACK_ENABLED,
                 "guardrail_threshold": settings.MIN_CONFIDENCE_THRESHOLD,
                 "simulated_mode": settings.SIMULATE_GITHUB_ACTIONS
@@ -252,6 +263,7 @@ async def dashboard(request: Request):
             "active_project": active_project,
             "incidents": incidents,
             "google_client_id": os.getenv("GOOGLE_CLIENT_ID", ""),
+            "github_client_id": os.getenv("GITHUB_CLIENT_ID", ""),
             "auto_rollback_enabled": settings.AUTO_ROLLBACK_ENABLED,
             "guardrail_threshold": settings.MIN_CONFIDENCE_THRESHOLD,
             "simulated_mode": settings.SIMULATE_GITHUB_ACTIONS
@@ -301,6 +313,141 @@ async def auth_google(payload: GoogleAuthPayload, response: Response):
             return {"status": "success", "user": user}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": f"Authentication failed: {str(e)}"})
+
+@app.post("/api/v1/auth/social-direct")
+async def social_direct_login(payload: SocialDirectPayload, response: Response):
+    email = (payload.email or "").strip().lower()
+    if not email:
+        return JSONResponse(status_code=400, content={"error": "Email is required for social authentication."})
+
+    provider = (payload.provider or "google").strip().lower()
+    sub_id = f"{provider}_{hashlib.md5(email.encode()).hexdigest()[:10]}"
+
+    first_name = (payload.first_name or "").strip() or None
+    last_name = (payload.last_name or "").strip() or None
+    organisation = (payload.organisation or "").strip() or None
+
+    if first_name or last_name:
+        name = f"{first_name or ''} {last_name or ''}".strip()
+    elif payload.name:
+        name = payload.name.strip()
+    elif payload.github_username:
+        name = payload.github_username.strip()
+    else:
+        name = email.split("@")[0]
+
+    # Assign provider avatar if not provided
+    picture = payload.picture
+    if not picture:
+        if provider == "github" and payload.github_username:
+            picture = f"https://github.com/{payload.github_username.strip()}.png"
+        elif provider == "github":
+            picture = "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+        else:
+            picture = "https://lh3.googleusercontent.com/a/default-user"
+
+    user = UserRepository.get_or_create_user(
+        sub_id=sub_id,
+        email=email,
+        name=name,
+        first_name=first_name,
+        last_name=last_name,
+        organisation=organisation,
+        picture=picture
+    )
+
+    if provider == "github" and payload.github_username:
+        UserRepository.update_user_config(user["id"], {"github_owner": payload.github_username.strip()})
+
+    response.set_cookie(
+        key="sre_user_id",
+        value=user["id"],
+        max_age=60 * 60 * 24 * 30,
+        httponly=False,
+        samesite="lax"
+    )
+    return {"status": "success", "user": user, "redirect": "/"}
+
+@app.get("/api/v1/auth/github")
+async def auth_github_start(request: Request):
+    client_id = os.getenv("GITHUB_CLIENT_ID")
+    if not client_id:
+        return RedirectResponse(url="/?open_auth=true&social=github")
+
+    redirect_uri = str(request.url_for("auth_github_callback"))
+    github_url = (
+        f"https://github.com/login/oauth/authorize?"
+        f"client_id={client_id}&scope=user:email,repo,workflow&redirect_uri={redirect_uri}"
+    )
+    return RedirectResponse(url=github_url)
+
+@app.get("/api/v1/auth/github/callback")
+async def auth_github_callback(code: str, request: Request):
+    client_id = os.getenv("GITHUB_CLIENT_ID")
+    client_secret = os.getenv("GITHUB_CLIENT_SECRET")
+    if not client_id or not client_secret:
+        return RedirectResponse(url="/?open_auth=true&social=github")
+
+    try:
+        async with httpx.AsyncClient() as client:
+            token_resp = await client.post(
+                "https://github.com/login/oauth/access_token",
+                headers={"Accept": "application/json"},
+                data={"client_id": client_id, "client_secret": client_secret, "code": code},
+                timeout=10.0
+            )
+            token_data = token_resp.json()
+            access_token = token_data.get("access_token")
+            if not access_token:
+                return RedirectResponse(url="/?auth_error=github_token_failed")
+
+            user_resp = await client.get(
+                "https://api.github.com/user",
+                headers={"Authorization": f"Bearer {access_token}", "Accept": "application/vnd.github.v3+json"},
+                timeout=10.0
+            )
+            user_info = user_resp.json()
+            gh_login = user_info.get("login")
+            gh_name = user_info.get("name") or gh_login
+            gh_avatar = user_info.get("avatar_url")
+            email = user_info.get("email")
+
+            if not email:
+                emails_resp = await client.get(
+                    "https://api.github.com/user/emails",
+                    headers={"Authorization": f"Bearer {access_token}", "Accept": "application/vnd.github.v3+json"},
+                    timeout=10.0
+                )
+                for em in emails_resp.json():
+                    if em.get("primary"):
+                        email = em.get("email")
+                        break
+
+            email = email or f"{gh_login}@users.noreply.github.com"
+            sub_id = f"github_{user_info.get('id')}"
+
+            user = UserRepository.get_or_create_user(
+                sub_id=sub_id,
+                email=email,
+                name=gh_name,
+                picture=gh_avatar
+            )
+            UserRepository.update_user_config(user["id"], {
+                "github_token": access_token,
+                "github_owner": gh_login
+            })
+
+            res = RedirectResponse(url="/", status_code=302)
+            res.set_cookie(
+                key="sre_user_id",
+                value=user["id"],
+                max_age=60 * 60 * 24 * 30,
+                httponly=False,
+                samesite="lax"
+            )
+            return res
+    except Exception as e:
+        return RedirectResponse(url=f"/?auth_error={hashlib.md5(str(e).encode()).hexdigest()[:8]}")
 
 @app.get("/api/v1/auth/smtp-status")
 async def get_smtp_status():
