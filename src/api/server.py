@@ -323,6 +323,52 @@ async def get_smtp_status():
         "etc_secrets_files": secret_files
     }
 
+@app.get("/api/v1/auth/smtp-test")
+async def test_smtp_connection():
+    import smtplib
+    from dotenv import load_dotenv
+    load_dotenv(override=False)
+    if os.path.isdir("/etc/secrets"):
+        try:
+            for fname in os.listdir("/etc/secrets"):
+                fpath = os.path.join("/etc/secrets", fname)
+                if os.path.isfile(fpath):
+                    load_dotenv(fpath, override=True)
+        except Exception:
+            pass
+
+    smtp_user = os.getenv("SMTP_USER", "").strip().strip("'\"")
+    smtp_pass = os.getenv("SMTP_PASSWORD", "").strip().strip("'\"").replace(" ", "")
+    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com").strip().strip("'\"")
+
+    if not smtp_user or not smtp_pass:
+        return {"success": False, "error": "SMTP_USER or SMTP_PASSWORD is not set."}
+
+    results = {}
+    try:
+        with smtplib.SMTP(smtp_host, 587, timeout=10) as s:
+            s.ehlo()
+            s.starttls()
+            s.ehlo()
+            s.login(smtp_user, smtp_pass)
+        results["tls_587"] = "OK"
+    except Exception as e:
+        results["tls_587"] = f"{type(e).__name__}: {str(e)}"
+
+    try:
+        with smtplib.SMTP_SSL(smtp_host, 465, timeout=10) as s:
+            s.login(smtp_user, smtp_pass)
+        results["ssl_465"] = "OK"
+    except Exception as e:
+        results["ssl_465"] = f"{type(e).__name__}: {str(e)}"
+
+    return {
+        "smtp_user": (smtp_user[:4] + "***@" + smtp_user.split("@")[-1]) if "@" in smtp_user else smtp_user,
+        "password_length": len(smtp_pass),
+        "results": results,
+        "can_send": results.get("tls_587") == "OK" or results.get("ssl_465") == "OK"
+    }
+
 @app.post("/api/v1/auth/otp/send")
 async def send_otp(payload: OTPSendPayload):
     email = (payload.email or "").strip().lower()

@@ -118,11 +118,13 @@ class OTPService:
                             load_dotenv(fpath, override=True)
                 except Exception as e:
                     logger.warning(f"Error reading /etc/secrets: {e}")
-                smtp_user = os.getenv("SMTP_USER", "").strip()
-                smtp_pass = os.getenv("SMTP_PASSWORD", "").strip()
-
-        smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com").strip()
-        smtp_port = int(os.getenv("SMTP_PORT", "587"))
+                smtp_user = os.getenv("SMTP_USER", "").strip().strip("'\"")
+        smtp_pass = os.getenv("SMTP_PASSWORD", "").strip().strip("'\"").replace(" ", "")
+        smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com").strip().strip("'\"")
+        try:
+            smtp_port = int(str(os.getenv("SMTP_PORT", "587")).strip().strip("'\""))
+        except Exception:
+            smtp_port = 587
 
         if not smtp_user or not smtp_pass:
             logger.info(f"[AUTH OTP] SMTP not configured (SMTP_USER: {'set' if smtp_user else 'missing'}, SMTP_PASSWORD: {'set' if smtp_pass else 'missing'}). Generated verification code for {recipient}: {code}")
@@ -150,15 +152,27 @@ class OTPService:
             msg.attach(MIMEText(text_body, "plain"))
             msg.attach(MIMEText(html_body, "html"))
 
-            with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
-                server.ehlo()
-                server.starttls()
-                server.ehlo()
-                server.login(smtp_user, smtp_pass)
-                server.sendmail(smtp_user, [recipient], msg.as_string())
+            # Send via STARTTLS or SSL
+            if smtp_port == 465:
+                with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=12) as server:
+                    server.login(smtp_user, smtp_pass)
+                    server.sendmail(smtp_user, [recipient], msg.as_string())
+            else:
+                try:
+                    with smtplib.SMTP(smtp_host, smtp_port, timeout=12) as server:
+                        server.ehlo()
+                        server.starttls()
+                        server.ehlo()
+                        server.login(smtp_user, smtp_pass)
+                        server.sendmail(smtp_user, [recipient], msg.as_string())
+                except Exception as tls_err:
+                    logger.warning(f"[AUTH OTP] STARTTLS failed ({tls_err}), attempting SSL on port 465 fallback...")
+                    with smtplib.SMTP_SSL(smtp_host, 465, timeout=12) as server:
+                        server.login(smtp_user, smtp_pass)
+                        server.sendmail(smtp_user, [recipient], msg.as_string())
 
             logger.info(f"[AUTH OTP] Real email dispatched successfully to {recipient} via {smtp_host}")
             return True
         except Exception as e:
-            logger.warning(f"[AUTH OTP] Failed to send email via SMTP ({e}). Fallback to dev mode.")
+            logger.error(f"[AUTH OTP] Failed to send email via SMTP: {e}", exc_info=True)
             return False
