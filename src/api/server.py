@@ -345,8 +345,20 @@ async def test_smtp_connection():
         return {"success": False, "error": "SMTP_USER or SMTP_PASSWORD is not set."}
 
     results = {}
+    
+    # Check Resend HTTPS API (Port 443 - free from cloud port blocking)
+    resend_key = os.getenv("RESEND_API_KEY", "").strip()
+    if resend_key:
+        try:
+            r = httpx.get("https://api.resend.com/api-keys", headers={"Authorization": f"Bearer {resend_key}"}, timeout=5.0)
+            results["resend_https_443"] = "OK" if r.status_code == 200 else f"HTTP {r.status_code}"
+        except Exception as e:
+            results["resend_https_443"] = f"{type(e).__name__}: {str(e)}"
+    else:
+        results["resend_https_443"] = "Not configured (Recommended for Render: set RESEND_API_KEY to bypass port blocks)"
+
     try:
-        with smtplib.SMTP(smtp_host, 587, timeout=10) as s:
+        with smtplib.SMTP(smtp_host, 587, timeout=6) as s:
             s.ehlo()
             s.starttls()
             s.ehlo()
@@ -356,17 +368,20 @@ async def test_smtp_connection():
         results["tls_587"] = f"{type(e).__name__}: {str(e)}"
 
     try:
-        with smtplib.SMTP_SSL(smtp_host, 465, timeout=10) as s:
+        with smtplib.SMTP_SSL(smtp_host, 465, timeout=6) as s:
             s.login(smtp_user, smtp_pass)
         results["ssl_465"] = "OK"
     except Exception as e:
         results["ssl_465"] = f"{type(e).__name__}: {str(e)}"
 
+    can_send = results.get("resend_https_443") == "OK" or results.get("tls_587") == "OK" or results.get("ssl_465") == "OK"
+
     return {
         "smtp_user": (smtp_user[:4] + "***@" + smtp_user.split("@")[-1]) if "@" in smtp_user else smtp_user,
         "password_length": len(smtp_pass),
         "results": results,
-        "can_send": results.get("tls_587") == "OK" or results.get("ssl_465") == "OK"
+        "can_send": can_send,
+        "note": "Render free tier blocks raw SMTP ports 587 and 465. Use RESEND_API_KEY (HTTPS port 443) for 100% reliable email dispatch on Render."
     }
 
 @app.post("/api/v1/auth/otp/send")

@@ -152,7 +152,65 @@ class OTPService:
             msg.attach(MIMEText(text_body, "plain"))
             msg.attach(MIMEText(html_body, "html"))
 
-            # Send via STARTTLS or SSL
+            # 1. Primary Cloud Dispatch: Resend HTTPS API (Port 443 - never blocked by Render)
+            resend_key = os.getenv("RESEND_API_KEY", "").strip()
+            if resend_key:
+                try:
+                    import httpx
+                    from_email = os.getenv("RESEND_FROM_EMAIL", "SRE Copilot <onboarding@resend.dev>").strip()
+                    res = httpx.post(
+                        "https://api.resend.com/emails",
+                        headers={
+                            "Authorization": f"Bearer {resend_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "from": from_email,
+                            "to": [recipient],
+                            "subject": f"[{subject_title}] Your Verification Code: {code}",
+                            "html": html_body,
+                            "text": text_body
+                        },
+                        timeout=10.0
+                    )
+                    if res.status_code in [200, 201]:
+                        logger.info(f"[AUTH OTP] Email dispatched successfully to {recipient} via Resend HTTPS API")
+                        return True
+                    else:
+                        logger.error(f"[AUTH OTP] Resend API returned {res.status_code}: {res.text}")
+                except Exception as resend_err:
+                    logger.error(f"[AUTH OTP] Resend HTTP dispatch failed: {resend_err}")
+
+            # 2. Secondary Cloud Dispatch: Brevo HTTPS API (Port 443 - never blocked by Render)
+            brevo_key = os.getenv("BREVO_API_KEY", "").strip()
+            if brevo_key:
+                try:
+                    import httpx
+                    sender_email = smtp_user or os.getenv("BREVO_SENDER_EMAIL", "notifications@sre-copilot.internal")
+                    res = httpx.post(
+                        "https://api.brevo.com/v3/smtp/email",
+                        headers={
+                            "api-key": brevo_key,
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "sender": {"name": "SRE Incident Copilot", "email": sender_email},
+                            "to": [{"email": recipient}],
+                            "subject": f"[{subject_title}] Your Verification Code: {code}",
+                            "htmlContent": html_body,
+                            "textContent": text_body
+                        },
+                        timeout=10.0
+                    )
+                    if res.status_code in [200, 201]:
+                        logger.info(f"[AUTH OTP] Email dispatched successfully to {recipient} via Brevo HTTPS API")
+                        return True
+                    else:
+                        logger.error(f"[AUTH OTP] Brevo API returned {res.status_code}: {res.text}")
+                except Exception as brevo_err:
+                    logger.error(f"[AUTH OTP] Brevo HTTP dispatch failed: {brevo_err}")
+
+            # 3. Direct SMTP (Fallback for hosts that do not block ports 587/465)
             if smtp_port == 465:
                 with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=12) as server:
                     server.login(smtp_user, smtp_pass)
