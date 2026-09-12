@@ -368,25 +368,34 @@ async def social_direct_login(payload: SocialDirectPayload, response: Response):
     )
     return {"status": "success", "user": user, "redirect": "/"}
 
+def _get_oauth_callback_url(request: Request, endpoint_path: str) -> str:
+    app_url = os.getenv("APP_URL", "").rstrip("/")
+    if app_url:
+        return f"{app_url}/api/v1/auth/{endpoint_path}"
+    url = str(request.url_for(f"auth_{endpoint_path}"))
+    if request.headers.get("x-forwarded-proto") == "https" and url.startswith("http://"):
+        url = "https://" + url[7:]
+    return url
+
 @app.get("/api/v1/auth/github")
 async def auth_github_start(request: Request):
     client_id = os.getenv("GITHUB_CLIENT_ID")
     if not client_id:
-        return RedirectResponse(url="/?open_auth=true&social=github")
+        return RedirectResponse(url="/?auth_error=github_client_id_missing&open_auth=true")
 
-    redirect_uri = str(request.url_for("auth_github_callback"))
+    redirect_uri = _get_oauth_callback_url(request, "github_callback")
     github_url = (
         f"https://github.com/login/oauth/authorize?"
         f"client_id={client_id}&scope=user:email,repo,workflow&redirect_uri={redirect_uri}"
     )
     return RedirectResponse(url=github_url)
 
-@app.get("/api/v1/auth/github/callback")
+@app.get("/api/v1/auth/github/callback", name="auth_github_callback")
 async def auth_github_callback(code: str, request: Request):
     client_id = os.getenv("GITHUB_CLIENT_ID")
     client_secret = os.getenv("GITHUB_CLIENT_SECRET")
     if not client_id or not client_secret:
-        return RedirectResponse(url="/?open_auth=true&social=github")
+        return RedirectResponse(url="/?auth_error=github_credentials_missing&open_auth=true")
 
     try:
         async with httpx.AsyncClient() as client:
@@ -399,7 +408,7 @@ async def auth_github_callback(code: str, request: Request):
             token_data = token_resp.json()
             access_token = token_data.get("access_token")
             if not access_token:
-                return RedirectResponse(url="/?auth_error=github_token_failed")
+                return RedirectResponse(url="/?auth_error=github_token_failed&open_auth=true")
 
             user_resp = await client.get(
                 "https://api.github.com/user",
@@ -426,10 +435,16 @@ async def auth_github_callback(code: str, request: Request):
             email = email or f"{gh_login}@users.noreply.github.com"
             sub_id = f"github_{user_info.get('id')}"
 
+            name_parts = gh_name.split() if gh_name else [gh_login]
+            first_name = name_parts[0]
+            last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+
             user = UserRepository.get_or_create_user(
                 sub_id=sub_id,
                 email=email,
                 name=gh_name,
+                first_name=first_name,
+                last_name=last_name,
                 picture=gh_avatar
             )
             UserRepository.update_user_config(user["id"], {
@@ -447,7 +462,87 @@ async def auth_github_callback(code: str, request: Request):
             )
             return res
     except Exception as e:
-        return RedirectResponse(url=f"/?auth_error={hashlib.md5(str(e).encode()).hexdigest()[:8]}")
+        return RedirectResponse(url=f"/?auth_error=github_{hashlib.md5(str(e).encode()).hexdigest()[:8]}&open_auth=true")
+
+@app.get("/api/v1/auth/google/start")
+async def auth_google_start(request: Request):
+    client_id = os.getenv("GOOGLE_CLIENT_ID")
+    if not client_id:
+        return RedirectResponse(url="/?auth_error=google_client_id_missing&open_auth=true")
+
+    redirect_uri = _get_oauth_callback_url(request, "google_callback")
+    google_url = (
+        f"https://accounts.google.com/o/oauth2/v2/auth?"
+        f"client_id={client_id}&"
+        f"redirect_uri={redirect_uri}&"
+        f"response_type=code&"
+        f"scope=openid%20email%20profile&"
+        f"access_type=offline&"
+        f"prompt=select_account"
+    )
+    return RedirectResponse(url=google_url)
+
+@app.get("/api/v1/auth/google/callback", name="auth_google_callback")
+async def auth_google_callback(code: str, request: Request):
+    client_id = os.getenv("GOOGLE_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+    if not client_id or not client_secret:
+        return RedirectResponse(url="/?auth_error=google_credentials_missing&open_auth=true")
+
+    redirect_uri = _get_oauth_callback_url(request, "google_callback")
+    try:
+        async with httpx.AsyncClient() as client:
+            token_resp = await client.post(
+                "https://oauth2.googleapis.com/token",
+                data={
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "code": code,
+                    "grant_type": "authorization_code",
+                    "redirect_uri": redirect_uri
+                },
+                timeout=10.0
+            )
+            token_data = token_resp.json()
+            access_token = token_data.get("access_token")
+            if not access_token:
+                return RedirectResponse(url="/?auth_error=google_token_failed&open_auth=true")
+
+            user_resp = await client.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {access_token}"},
+                timeout=10.0
+            )
+            user_info = user_resp.json()
+            email = user_info.get("email")
+            name = user_info.get("name") or email.split("@")[0]
+            picture = user_info.get("picture")
+            sub_id = f"google_{user_info.get('sub')}"
+
+            name_parts = name.split()
+            first_name = name_parts[0] if name_parts else ""
+            last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+
+            user = UserRepository.get_or_create_user(
+                sub_id=sub_id,
+                email=email,
+                name=name,
+                first_name=first_name,
+                last_name=last_name,
+                picture=picture
+            )
+
+            res = RedirectResponse(url="/", status_code=302)
+            res.set_cookie(
+                key="sre_user_id",
+                value=user["id"],
+                max_age=60 * 60 * 24 * 30,
+                httponly=False,
+                samesite="lax"
+            )
+            return res
+    except Exception as e:
+        return RedirectResponse(url=f"/?auth_error=google_oauth_failed&open_auth=true")
 
 @app.get("/api/v1/auth/smtp-status")
 async def get_smtp_status():

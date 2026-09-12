@@ -66,7 +66,7 @@ def test_github_oauth_redirect_fallback(client, monkeypatch):
     resp = client.get("/api/v1/auth/github", follow_redirects=False)
     assert resp.status_code == 307
     assert "open_auth=true" in resp.headers["location"]
-    assert "social=github" in resp.headers["location"]
+    assert "github_client_id_missing" in resp.headers["location"]
 
 def test_github_oauth_redirect_with_client_id(client, monkeypatch):
     """Test GitHub OAuth start redirects to GitHub login when configured."""
@@ -76,3 +76,20 @@ def test_github_oauth_redirect_with_client_id(client, monkeypatch):
     location = resp.headers["location"]
     assert "github.com/login/oauth/authorize" in location
     assert "client_id=test_client_id_12345" in location
+
+def test_google_oauth_redirect_fallback(client, monkeypatch):
+    """Test Google OAuth start endpoint falls back when client ID is not configured."""
+    monkeypatch.delenv("GOOGLE_CLIENT_ID", raising=False)
+    resp = client.get("/api/v1/auth/google/start", follow_redirects=False)
+    assert resp.status_code == 307
+    assert "open_auth=true" in resp.headers["location"]
+    assert "google_client_id_missing" in resp.headers["location"]
+
+def test_google_oauth_redirect_with_client_id(client, monkeypatch):
+    """Test Google OAuth start redirects to Google accounts login when configured."""
+    monkeypatch.setenv("GOOGLE_CLIENT_ID", "google_test_client_id_67890")
+    resp = client.get("/api/v1/auth/google/start", follow_redirects=False)
+    assert resp.status_code == 307
+    location = resp.headers["location"]
+    assert "accounts.google.com/o/oauth2/v2/auth" in location
+    assert "client_id=google_test_client_id_67890" in location
