@@ -102,23 +102,92 @@ class OTPService:
     @classmethod
     def _send_smtp_email(cls, recipient: str, code: str, purpose: str) -> bool:
         """
-        Sends an HTML email with the 6-digit OTP code using SMTP credentials if available.
+        Sends an HTML email with the 6-digit OTP code using Resend/Brevo HTTPS API or SMTP.
         """
-        smtp_user = os.getenv("SMTP_USER", "").strip()
-        smtp_pass = os.getenv("SMTP_PASSWORD", "").strip()
+        # Always reload /etc/secrets if present on Render
+        if os.path.isdir("/etc/secrets"):
+            from dotenv import load_dotenv
+            try:
+                for fname in os.listdir("/etc/secrets"):
+                    fpath = os.path.join("/etc/secrets", fname)
+                    if os.path.isfile(fpath):
+                        load_dotenv(fpath, override=True)
+            except Exception as e:
+                logger.warning(f"Error reading /etc/secrets: {e}")
 
-        # Fallback: scan /etc/secrets directory if on Render and not yet in environment
-        if not smtp_user or not smtp_pass:
-            if os.path.isdir("/etc/secrets"):
-                from dotenv import load_dotenv
-                try:
-                    for fname in os.listdir("/etc/secrets"):
-                        fpath = os.path.join("/etc/secrets", fname)
-                        if os.path.isfile(fpath):
-                            load_dotenv(fpath, override=True)
-                except Exception as e:
-                    logger.warning(f"Error reading /etc/secrets: {e}")
-                smtp_user = os.getenv("SMTP_USER", "").strip().strip("'\"")
+        subject_title = "Admin Console Access" if purpose == "admin_login" else "Account Verification"
+        text_body = f"Your verification code for SRE Incident Copilot is: {code}\nThis code will expire in 10 minutes.\nIf you did not request this, please ignore."
+        html_body = f"""
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff;">
+            <h2 style="color: #000000; font-size: 20px; font-weight: 800; margin-top: 0;">SRE Incident Copilot</h2>
+            <p style="color: #4a5568; font-size: 14px;">Use the following verification code to access your account:</p>
+            <div style="background: #000000; color: #ffffff; font-family: monospace; font-size: 28px; font-weight: 700; letter-spacing: 6px; text-align: center; padding: 16px; border-radius: 6px; margin: 20px 0;">
+                {code}
+            </div>
+            <p style="color: #718096; font-size: 12px; margin-bottom: 0;">This code will expire in 10 minutes. If you did not request this, no action is needed.</p>
+        </div>
+        """
+
+        # 1. Primary Cloud Dispatch: Resend HTTPS API (Port 443 - never blocked by Render)
+        resend_key = os.getenv("RESEND_API_KEY", "").strip().strip("'\"")
+        if resend_key:
+            try:
+                import httpx
+                from_email = os.getenv("RESEND_FROM_EMAIL", "SRE Copilot <onboarding@resend.dev>").strip()
+                res = httpx.post(
+                    "https://api.resend.com/emails",
+                    headers={
+                        "Authorization": f"Bearer {resend_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "from": from_email,
+                        "to": [recipient],
+                        "subject": f"[{subject_title}] Your Verification Code: {code}",
+                        "html": html_body,
+                        "text": text_body
+                    },
+                    timeout=10.0
+                )
+                if res.status_code in [200, 201]:
+                    logger.info(f"[AUTH OTP] Email dispatched successfully to {recipient} via Resend HTTPS API")
+                    return True
+                else:
+                    logger.error(f"[AUTH OTP] Resend API returned {res.status_code}: {res.text}")
+            except Exception as resend_err:
+                logger.error(f"[AUTH OTP] Resend HTTP dispatch failed: {resend_err}")
+
+        # 2. Secondary Cloud Dispatch: Brevo HTTPS API (Port 443 - never blocked by Render)
+        brevo_key = os.getenv("BREVO_API_KEY", "").strip().strip("'\"")
+        if brevo_key:
+            try:
+                import httpx
+                sender_email = os.getenv("SMTP_USER", "").strip() or os.getenv("BREVO_SENDER_EMAIL", "notifications@sre-copilot.internal")
+                res = httpx.post(
+                    "https://api.brevo.com/v3/smtp/email",
+                    headers={
+                        "api-key": brevo_key,
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "sender": {"name": "SRE Incident Copilot", "email": sender_email},
+                        "to": [{"email": recipient}],
+                        "subject": f"[{subject_title}] Your Verification Code: {code}",
+                        "htmlContent": html_body,
+                        "textContent": text_body
+                    },
+                    timeout=10.0
+                )
+                if res.status_code in [200, 201]:
+                    logger.info(f"[AUTH OTP] Email dispatched successfully to {recipient} via Brevo HTTPS API")
+                    return True
+                else:
+                    logger.error(f"[AUTH OTP] Brevo API returned {res.status_code}: {res.text}")
+            except Exception as brevo_err:
+                logger.error(f"[AUTH OTP] Brevo HTTP dispatch failed: {brevo_err}")
+
+        # 3. Direct SMTP (Fallback for local environments or hosts that do not block port 587)
+        smtp_user = os.getenv("SMTP_USER", "").strip().strip("'\"")
         smtp_pass = os.getenv("SMTP_PASSWORD", "").strip().strip("'\"").replace(" ", "")
         smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com").strip().strip("'\"")
         try:
@@ -127,110 +196,36 @@ class OTPService:
             smtp_port = 587
 
         if not smtp_user or not smtp_pass:
-            logger.info(f"[AUTH OTP] SMTP not configured (SMTP_USER: {'set' if smtp_user else 'missing'}, SMTP_PASSWORD: {'set' if smtp_pass else 'missing'}). Generated verification code for {recipient}: {code}")
+            logger.info(f"[AUTH OTP] Neither Resend nor SMTP is fully configured. Generated verification code for {recipient}: {code}")
             return False
 
         try:
-            subject_title = "Admin Console Access" if purpose == "admin_login" else "Account Verification"
             msg = MIMEMultipart("alternative")
             msg["Subject"] = f"[{subject_title}] Your Verification Code: {code}"
             msg["From"] = f"SRE Incident Copilot <{smtp_user}>"
             msg["To"] = recipient
-
-            text_body = f"Your verification code for SRE Incident Copilot is: {code}\nThis code will expire in 10 minutes.\nIf you did not request this, please ignore."
-            html_body = f"""
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff;">
-                <h2 style="color: #000000; font-size: 20px; font-weight: 800; margin-top: 0;">SRE Incident Copilot</h2>
-                <p style="color: #4a5568; font-size: 14px;">Use the following verification code to access your account:</p>
-                <div style="background: #000000; color: #ffffff; font-family: monospace; font-size: 28px; font-weight: 700; letter-spacing: 6px; text-align: center; padding: 16px; border-radius: 6px; margin: 20px 0;">
-                    {code}
-                </div>
-                <p style="color: #718096; font-size: 12px; margin-bottom: 0;">This code will expire in 10 minutes. If you did not request this, no action is needed.</p>
-            </div>
-            """
-
             msg.attach(MIMEText(text_body, "plain"))
             msg.attach(MIMEText(html_body, "html"))
 
-            # 1. Primary Cloud Dispatch: Resend HTTPS API (Port 443 - never blocked by Render)
-            resend_key = os.getenv("RESEND_API_KEY", "").strip()
-            if resend_key:
-                try:
-                    import httpx
-                    from_email = os.getenv("RESEND_FROM_EMAIL", "SRE Copilot <onboarding@resend.dev>").strip()
-                    res = httpx.post(
-                        "https://api.resend.com/emails",
-                        headers={
-                            "Authorization": f"Bearer {resend_key}",
-                            "Content-Type": "application/json"
-                        },
-                        json={
-                            "from": from_email,
-                            "to": [recipient],
-                            "subject": f"[{subject_title}] Your Verification Code: {code}",
-                            "html": html_body,
-                            "text": text_body
-                        },
-                        timeout=10.0
-                    )
-                    if res.status_code in [200, 201]:
-                        logger.info(f"[AUTH OTP] Email dispatched successfully to {recipient} via Resend HTTPS API")
-                        return True
-                    else:
-                        logger.error(f"[AUTH OTP] Resend API returned {res.status_code}: {res.text}")
-                except Exception as resend_err:
-                    logger.error(f"[AUTH OTP] Resend HTTP dispatch failed: {resend_err}")
-
-            # 2. Secondary Cloud Dispatch: Brevo HTTPS API (Port 443 - never blocked by Render)
-            brevo_key = os.getenv("BREVO_API_KEY", "").strip()
-            if brevo_key:
-                try:
-                    import httpx
-                    sender_email = smtp_user or os.getenv("BREVO_SENDER_EMAIL", "notifications@sre-copilot.internal")
-                    res = httpx.post(
-                        "https://api.brevo.com/v3/smtp/email",
-                        headers={
-                            "api-key": brevo_key,
-                            "Content-Type": "application/json"
-                        },
-                        json={
-                            "sender": {"name": "SRE Incident Copilot", "email": sender_email},
-                            "to": [{"email": recipient}],
-                            "subject": f"[{subject_title}] Your Verification Code: {code}",
-                            "htmlContent": html_body,
-                            "textContent": text_body
-                        },
-                        timeout=10.0
-                    )
-                    if res.status_code in [200, 201]:
-                        logger.info(f"[AUTH OTP] Email dispatched successfully to {recipient} via Brevo HTTPS API")
-                        return True
-                    else:
-                        logger.error(f"[AUTH OTP] Brevo API returned {res.status_code}: {res.text}")
-                except Exception as brevo_err:
-                    logger.error(f"[AUTH OTP] Brevo HTTP dispatch failed: {brevo_err}")
-
-            # 3. Direct SMTP (Fallback for hosts that do not block ports 587/465)
             if smtp_port == 465:
-                with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=12) as server:
+                with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10) as server:
                     server.login(smtp_user, smtp_pass)
                     server.sendmail(smtp_user, [recipient], msg.as_string())
             else:
                 try:
-                    with smtplib.SMTP(smtp_host, smtp_port, timeout=12) as server:
+                    with smtplib.SMTP(smtp_host, smtp_port, timeout=8) as server:
                         server.ehlo()
                         server.starttls()
                         server.ehlo()
                         server.login(smtp_user, smtp_pass)
                         server.sendmail(smtp_user, [recipient], msg.as_string())
                 except Exception as tls_err:
-                    logger.warning(f"[AUTH OTP] STARTTLS failed ({tls_err}), attempting SSL on port 465 fallback...")
-                    with smtplib.SMTP_SSL(smtp_host, 465, timeout=12) as server:
+                    with smtplib.SMTP_SSL(smtp_host, 465, timeout=8) as server:
                         server.login(smtp_user, smtp_pass)
                         server.sendmail(smtp_user, [recipient], msg.as_string())
 
             logger.info(f"[AUTH OTP] Real email dispatched successfully to {recipient} via {smtp_host}")
             return True
         except Exception as e:
-            logger.error(f"[AUTH OTP] Failed to send email via SMTP: {e}", exc_info=True)
+            logger.error(f"[AUTH OTP] Direct SMTP failed: {e}")
             return False

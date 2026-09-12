@@ -341,21 +341,31 @@ async def test_smtp_connection():
     smtp_pass = os.getenv("SMTP_PASSWORD", "").strip().strip("'\"").replace(" ", "")
     smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com").strip().strip("'\"")
 
-    if not smtp_user or not smtp_pass:
-        return {"success": False, "error": "SMTP_USER or SMTP_PASSWORD is not set."}
-
     results = {}
     
     # Check Resend HTTPS API (Port 443 - free from cloud port blocking)
-    resend_key = os.getenv("RESEND_API_KEY", "").strip()
+    resend_key = os.getenv("RESEND_API_KEY", "").strip().strip("'\"")
     if resend_key:
         try:
-            r = httpx.get("https://api.resend.com/api-keys", headers={"Authorization": f"Bearer {resend_key}"}, timeout=5.0)
-            results["resend_https_443"] = "OK" if r.status_code == 200 else f"HTTP {r.status_code}"
+            r = httpx.post(
+                "https://api.resend.com/emails",
+                headers={"Authorization": f"Bearer {resend_key}", "Content-Type": "application/json"},
+                json={
+                    "from": os.getenv("RESEND_FROM_EMAIL", "SRE Copilot <onboarding@resend.dev>"),
+                    "to": ["delivered@resend.dev"],
+                    "subject": "Test Verification",
+                    "text": "Testing Resend connection"
+                },
+                timeout=8.0
+            )
+            if r.status_code in [200, 201]:
+                results["resend_https_443"] = f"OK (Resend delivery confirmed, ID: {r.json().get('id')})"
+            else:
+                results["resend_https_443"] = f"Error {r.status_code}: {r.text}"
         except Exception as e:
-            results["resend_https_443"] = f"{type(e).__name__}: {str(e)}"
+            results["resend_https_443"] = f"Exception: {type(e).__name__}: {str(e)}"
     else:
-        results["resend_https_443"] = "Not configured (Recommended for Render: set RESEND_API_KEY to bypass port blocks)"
+        results["resend_https_443"] = "Not configured (set RESEND_API_KEY in Render to bypass port blocks)"
 
     try:
         with smtplib.SMTP(smtp_host, 587, timeout=6) as s:
