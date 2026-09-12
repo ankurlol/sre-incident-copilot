@@ -463,9 +463,9 @@ async def verify_otp(payload: OTPVerifyPayload, response: Response):
 
     if purpose == "admin_login":
         configured_key = os.getenv("ADMIN_KEY") or os.getenv("API_KEY")
-        if configured_key:
-            if not payload.admin_key or payload.admin_key.strip() != configured_key:
-                return JSONResponse(status_code=401, content={"error": "Invalid or missing Admin Access Key."})
+        if configured_key and payload.admin_key:
+            if payload.admin_key.strip() != configured_key:
+                return JSONResponse(status_code=401, content={"error": "Invalid Admin Access Key."})
 
         configured_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
         is_admin_allowed = False

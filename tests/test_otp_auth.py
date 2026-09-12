@@ -100,3 +100,33 @@ def test_otp_admin_authorized_flow(client, monkeypatch):
     dash_resp = client.get("/admin")
     assert dash_resp.status_code == 200
     assert "Platform Control Center" in dash_resp.text
+
+def test_otp_admin_optional_key_flow(client, monkeypatch):
+    """Test that an authorized admin can sign in via OTP without entering the optional admin key."""
+    admin_email = "super.admin@company.com"
+    monkeypatch.setenv("ADMIN_EMAIL", admin_email)
+    monkeypatch.setenv("ADMIN_KEY", "configured_server_secret")
+
+    # 1. Request OTP without providing admin_key
+    send_resp = client.post(
+        "/api/v1/auth/otp/send",
+        json={"email": admin_email, "purpose": "admin_login"}
+    )
+    assert send_resp.status_code == 200
+    code = send_resp.json().get("dev_code")
+    assert code is not None
+
+    # 2. Verify OTP without providing admin_key
+    verify_resp = client.post(
+        "/api/v1/auth/otp/verify",
+        json={
+            "email": admin_email,
+            "code": code,
+            "purpose": "admin_login"
+        }
+    )
+    assert verify_resp.status_code == 200
+    vdata = verify_resp.json()
+    assert vdata["user"]["role"] == "admin"
+    assert vdata["user"]["is_admin"] is True
+
