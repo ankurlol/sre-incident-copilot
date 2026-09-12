@@ -711,6 +711,262 @@
             overflow-y: auto;
         }
 
+        /* Split Screen Auth Modal (Capturing Moments / Dark Desert Dunes Theme) */
+        .auth-split-modal {
+            background: #15111e;
+            border: 1px solid #2d263d;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 960px;
+            padding: 18px;
+            box-shadow: 0 35px 70px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06);
+            display: grid;
+            grid-template-columns: 1fr 1.15fr;
+            gap: 24px;
+            position: relative;
+            max-height: 94vh;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .auth-split-modal {
+                grid-template-columns: 1fr;
+                padding: 16px;
+                gap: 16px;
+            }
+            .auth-visual-panel {
+                display: none !important;
+            }
+        }
+
+        .auth-visual-panel {
+            border-radius: 14px;
+            overflow: hidden;
+            background: linear-gradient(180deg, rgba(25, 18, 42, 0.45) 0%, rgba(16, 12, 28, 0.88) 100%),
+                        url('https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1000&q=80') center/cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 22px;
+            min-height: 520px;
+            position: relative;
+        }
+
+        .auth-visual-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 2;
+        }
+
+        .auth-visual-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 19px;
+            letter-spacing: -0.5px;
+        }
+
+        .btn-back-website {
+            background: rgba(255, 255, 255, 0.14) !important;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.22) !important;
+            color: #ffffff !important;
+            font-size: 12.5px !important;
+            font-weight: 500 !important;
+            padding: 7px 15px !important;
+            border-radius: 20px !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            transition: all 0.2s ease !important;
+        }
+        .btn-back-website:hover {
+            background: rgba(255, 255, 255, 0.22) !important;
+            border-color: rgba(255, 255, 255, 0.35) !important;
+            transform: translateX(2px);
+        }
+
+        .auth-visual-footer {
+            z-index: 2;
+            text-align: center;
+            padding: 0 10px 10px 10px;
+        }
+
+        .auth-visual-title {
+            color: #ffffff;
+            font-size: 23px;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 22px;
+            letter-spacing: -0.3px;
+        }
+
+        .auth-carousel-dots {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .auth-carousel-dot {
+            height: 3.5px;
+            border-radius: 4px;
+            transition: all 0.25s ease;
+        }
+        .auth-carousel-dot.active {
+            width: 24px;
+            background: #ffffff;
+        }
+        .auth-carousel-dot.inactive {
+            width: 14px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .auth-form-panel {
+            padding: 20px 22px 20px 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-form-title {
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .auth-form-subtitle {
+            color: #8c859f;
+            font-size: 13.5px;
+            margin-bottom: 24px;
+        }
+        .auth-form-subtitle a {
+            color: #c4b5fd;
+            text-decoration: underline;
+            font-weight: 500;
+            transition: color 0.15s;
+        }
+        .auth-form-subtitle a:hover {
+            color: #e9d5ff;
+        }
+
+        .auth-input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .auth-input-field {
+            margin-bottom: 12px;
+        }
+
+        .auth-input {
+            width: 100% !important;
+            background: #231e2f !important;
+            border: 1px solid #3c344d !important;
+            border-radius: 9px !important;
+            color: #ffffff !important;
+            font-size: 13.5px !important;
+            padding: 12px 14px !important;
+            outline: none !important;
+            transition: all 0.2s ease !important;
+            font-family: inherit !important;
+            box-sizing: border-box !important;
+        }
+        .auth-input::placeholder {
+            color: #726a84 !important;
+        }
+        .auth-input:focus, .auth-input.active-glow {
+            border-color: #8b5cf6 !important;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.28) !important;
+            background: #282236 !important;
+        }
+
+        .auth-checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12.5px;
+            color: #9d96b0;
+            margin: 14px 0 20px 0;
+            cursor: pointer;
+        }
+        .auth-checkbox-row a {
+            color: #c4b5fd;
+            text-decoration: underline;
+        }
+
+        .auth-btn-primary {
+            width: 100% !important;
+            background: #6e46e6 !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 9px !important;
+            padding: 13px !important;
+            font-size: 14.5px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            transition: background 0.15s ease, transform 0.15s ease !important;
+        }
+        .auth-btn-primary:hover {
+            background: #5a32d3 !important;
+            transform: translateY(-1px);
+        }
+        .auth-btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0 16px 0;
+            color: #726a84;
+            font-size: 12px;
+        }
+        .auth-divider::before, .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #342d44;
+        }
+        .auth-divider span {
+            padding: 0 12px;
+        }
+
+        .auth-social-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .auth-btn-social {
+            background: #231e2f !important;
+            border: 1px solid #3c344d !important;
+            border-radius: 9px !important;
+            color: #ffffff !important;
+            font-size: 13.5px !important;
+            font-weight: 500 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            padding: 11px !important;
+            cursor: pointer !important;
+            transition: all 0.15s ease !important;
+            width: 100% !important;
+        }
+        .auth-btn-social:hover {
+            background: #2b253b !important;
+            border-color: #5d5275 !important;
+        }
+
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -1223,156 +1479,172 @@
     <!-- AUTHENTICATION MODAL (Login / Signup)                             -->
     <!-- ----------------------------------------------------------------- -->
     <div id="authModal" class="modal-backdrop">
-        <div class="modal">
-            <div class="modal-header">
-                <div>
-                    <h3 class="modal-title" id="modalMainTitle">Sign In to SRE Copilot</h3>
-                    <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;" id="modalSubTitle">Connect to manage your autonomous service reliability</p>
-                </div>
-                <button type="button" class="close-btn" onclick="closeAuthModal()">&times;</button>
-            </div>
-
-            <!-- Tab Switcher -->
-            <div id="authTabSwitcher" style="display: flex; border-bottom: 1px solid var(--border); margin-bottom: 18px; gap: 4px;">
-                <button type="button" id="authTabSignIn" class="btn-outline" style="flex: 1; border-radius: 6px 6px 0 0; border-bottom: none; font-size: 13.5px; padding: 10px; background: #ffffff !important; color: #000000 !important; font-weight: 700; border-color: #000000;" onclick="switchAuthTab('signin')">
-                    Sign In
-                </button>
-                <button type="button" id="authTabSignUp" class="btn-outline" style="flex: 1; border-radius: 6px 6px 0 0; border-bottom: none; font-size: 13.5px; padding: 10px; background: #f8fafc !important; color: var(--text-muted) !important; font-weight: 600; border-color: transparent;" onclick="switchAuthTab('signup')">
-                    Create Account (Sign Up)
-                </button>
-            </div>
-
-            <!-- Notice / Status Banner for OAuth alerts -->
-            <div id="authNotice" style="display: none; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 12.5px; color: #92400e; line-height: 1.5;"></div>
-
-            <!-- TAB 1: SIGN IN CONTENT -->
-            <div id="authSignInContent">
-                <div class="social-auth-group">
-                    <button type="button" class="btn-social" onclick="triggerSocialOAuth('google')">
-                        <svg width="18" height="18" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        <div class="auth-split-modal">
+            <!-- Left: Visual Atmosphere Panel (Desert Dunes Twilight) -->
+            <div class="auth-visual-panel">
+                <div class="auth-visual-header">
+                    <div class="auth-visual-logo">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                         </svg>
-                        <span>Sign in with Google</span>
-                    </button>
-                    <button type="button" class="btn-social btn-github-dark" onclick="triggerSocialOAuth('github')">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
-                        </svg>
-                        <span>Sign in with GitHub</span>
-                    </button>
-                </div>
-
-                <div class="divider">
-                    <span>or continue with email code</span>
-                </div>
-
-                <form onsubmit="handleMemberSendOTP(event)">
-                    <div class="form-group">
-                        <label>Work or Personal Email</label>
-                        <input type="email" id="login_email" placeholder="e.g. dev@company.com" required>
+                        <span>SRE</span>
                     </div>
-
-                    <div id="authStatus1" class="connection-status"></div>
-
-                    <button type="submit" id="emailSendOtpBtn" style="width: 100%; padding: 11px; font-size: 14px; margin-bottom: 14px;">
-                        Send Verification Code &rarr;
+                    <button type="button" class="btn-back-website" onclick="closeAuthModal()">
+                        Back to website &rarr;
                     </button>
-                </form>
+                </div>
 
-                <div style="text-align: center; font-size: 12.5px; color: var(--text-muted); padding-top: 10px; border-top: 1px solid var(--border);">
-                    New to SRE Copilot? <a href="javascript:void(0)" onclick="switchAuthTab('signup')" style="color: #000; font-weight: 700; text-decoration: underline;">Create an account</a>
+                <div class="auth-visual-footer">
+                    <h3 class="auth-visual-title">Autonomous Reliability,<br>Creating Uptime</h3>
+                    <div class="auth-carousel-dots">
+                        <span class="auth-carousel-dot active"></span>
+                        <span class="auth-carousel-dot inactive"></span>
+                        <span class="auth-carousel-dot inactive"></span>
+                    </div>
                 </div>
             </div>
 
-            <!-- TAB 2: SIGN UP CONTENT (First Name, Last Name, Email, Organisation) -->
-            <div id="authSignUpContent" style="display: none;">
-                <div class="social-auth-group">
-                    <button type="button" class="btn-social" onclick="triggerSocialOAuth('google')">
-                        <svg width="18" height="18" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                        </svg>
-                        <span>Sign up with Google</span>
-                    </button>
-                    <button type="button" class="btn-social btn-github-dark" onclick="triggerSocialOAuth('github')">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
-                        </svg>
-                        <span>Sign up with GitHub</span>
-                    </button>
+            <!-- Right: Interactive Form Panel -->
+            <div class="auth-form-panel">
+                <!-- Mobile / quick close cross -->
+                <div style="display: flex; justify-content: flex-end; margin-bottom: -6px;">
+                    <button type="button" class="close-btn" style="color: #8c859f !important;" onclick="closeAuthModal()">&times;</button>
                 </div>
 
-                <div class="divider">
-                    <span>or register with work email</span>
-                </div>
+                <!-- Notice / Status Banner for OAuth alerts -->
+                <div id="authNotice" style="display: none; background: #262033; border: 1px solid #7c3aed; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 12.5px; color: #ddd6fe; line-height: 1.5;"></div>
 
-                <form onsubmit="handleMemberSignUp(event)">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-                        <div>
-                            <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px;">First Name</label>
-                            <input type="text" id="signup_first_name" placeholder="e.g. Alex" style="width: 100%; padding: 10px 12px; font-size: 13.5px; border: 1px solid var(--border-dark); border-radius: 6px; outline: none;" required>
+                <!-- 1. SIGN UP CONTENT -->
+                <div id="authSignUpContent">
+                    <h2 class="auth-form-title">Create an account</h2>
+                    <p class="auth-form-subtitle">
+                        Already have an account? <a href="javascript:void(0)" onclick="switchAuthTab('signin')">Log in</a>
+                    </p>
+
+                    <form onsubmit="handleMemberSignUp(event)">
+                        <div class="auth-input-group">
+                            <input type="text" id="signup_first_name" placeholder="Fletcher" required class="auth-input active-glow">
+                            <input type="text" id="signup_last_name" placeholder="Last name" required class="auth-input">
                         </div>
-                        <div>
-                            <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px;">Last Name</label>
-                            <input type="text" id="signup_last_name" placeholder="e.g. Rivera" style="width: 100%; padding: 10px 12px; font-size: 13.5px; border: 1px solid var(--border-dark); border-radius: 6px; outline: none;" required>
+
+                        <div class="auth-input-field">
+                            <input type="email" id="signup_email" placeholder="Email" required class="auth-input">
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label>Work Email Address</label>
-                        <input type="email" id="signup_email" placeholder="alex@company.com" required>
-                    </div>
+                        <div class="auth-input-field" style="position: relative;">
+                            <input type="text" id="signup_org" placeholder="Organisation / Company" required class="auth-input">
+                            <span style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #726a84; pointer-events: none;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </span>
+                        </div>
 
-                    <div class="form-group">
-                        <label>Organisation / Company Name</label>
-                        <input type="text" id="signup_org" placeholder="e.g. Acme Corp / Cloud Platform Team" required>
-                    </div>
+                        <label class="auth-checkbox-row">
+                            <input type="checkbox" checked id="signup_terms" style="accent-color: #6e46e6; width: 16px; height: 16px; cursor: pointer;">
+                            <span>I agree to the <a href="javascript:void(0)">Terms & Conditions</a></span>
+                        </label>
 
-                    <div id="authStatusSignUp" class="connection-status"></div>
+                        <div id="authStatusSignUp" class="connection-status" style="margin-bottom: 12px;"></div>
 
-                    <button type="submit" id="signupSubmitBtn" style="width: 100%; padding: 11px; font-size: 14px; margin-bottom: 14px;">
-                        Create Account & Send Code &rarr;
-                    </button>
-                </form>
-
-                <div style="text-align: center; font-size: 12.5px; color: var(--text-muted); padding-top: 10px; border-top: 1px solid var(--border);">
-                    Already have an account? <a href="javascript:void(0)" onclick="switchAuthTab('signin')" style="color: #000; font-weight: 700; text-decoration: underline;">Sign in</a>
-                </div>
-            </div>
-
-            <!-- Member Step 2: Enter 6-digit OTP -->
-            <div id="memberOtpStep2" style="display: none;">
-                <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 14px; text-align: center;">
-                    <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Code dispatched to:</p>
-                    <p id="memberTargetEmail" style="font-size: 13.5px; font-weight: 700; margin: 3px 0 0 0; color: #000;"></p>
-                </div>
-
-                <form onsubmit="handleMemberVerifyOTP(event)">
-                    <div class="form-group" style="text-align: center;">
-                        <label style="display: block; margin-bottom: 6px;">Enter 6-Digit Verification Code</label>
-                        <input type="text" id="member_otp_code" maxlength="6" placeholder="••••••" style="width: 100%; padding: 12px; font-size: 22px; font-family: var(--font-mono); font-weight: 800; letter-spacing: 6px; text-align: center; border: 2px solid #000000; border-radius: 8px; outline: none;" required>
-                    </div>
-
-                    <div id="authStatus2" class="connection-status"></div>
-
-                    <button type="submit" id="memberVerifyBtn" style="width: 100%; padding: 11px; font-size: 14px; margin-bottom: 10px;">
-                        Verify & Enter Platform &rarr;
-                    </button>
-
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                        <button type="button" class="btn-outline" style="font-size: 11px; padding: 6px 12px;" onclick="switchMemberToStep1()">
-                            &larr; Back
+                        <button type="submit" id="signupSubmitBtn" class="auth-btn-primary">
+                            Create account
                         </button>
-                        <button type="button" class="btn-outline" style="font-size: 11px; padding: 6px 12px;" onclick="resendMemberOTP()">
-                            ↻ Resend Code
+                    </form>
+
+                    <div class="auth-divider">
+                        <span>Or register with</span>
+                    </div>
+
+                    <div class="auth-social-row">
+                        <button type="button" class="auth-btn-social" onclick="triggerSocialOAuth('google')">
+                            <svg width="17" height="17" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                            </svg>
+                            <span>Google</span>
+                        </button>
+                        <button type="button" class="auth-btn-social" onclick="triggerSocialOAuth('github')">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="#ffffff">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                            </svg>
+                            <span>GitHub</span>
                         </button>
                     </div>
-                </form>
+                </div>
+
+                <!-- 2. SIGN IN CONTENT (Log in) -->
+                <div id="authSignInContent" style="display: none;">
+                    <h2 class="auth-form-title">Log in to account</h2>
+                    <p class="auth-form-subtitle">
+                        Don't have an account? <a href="javascript:void(0)" onclick="switchAuthTab('signup')">Create an account</a>
+                    </p>
+
+                    <form onsubmit="handleMemberSendOTP(event)">
+                        <div class="auth-input-field">
+                            <input type="email" id="login_email" placeholder="Email" required class="auth-input">
+                        </div>
+
+                        <div id="authStatus1" class="connection-status" style="margin-bottom: 12px;"></div>
+
+                        <button type="submit" id="emailSendOtpBtn" class="auth-btn-primary">
+                            Log in with Email Code &rarr;
+                        </button>
+                    </form>
+
+                    <div class="auth-divider">
+                        <span>Or log in with</span>
+                    </div>
+
+                    <div class="auth-social-row">
+                        <button type="button" class="auth-btn-social" onclick="triggerSocialOAuth('google')">
+                            <svg width="17" height="17" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                            </svg>
+                            <span>Google</span>
+                        </button>
+                        <button type="button" class="auth-btn-social" onclick="triggerSocialOAuth('github')">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="#ffffff">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                            </svg>
+                            <span>GitHub</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. VERIFY OTP CONTENT (Step 2) -->
+                <div id="memberOtpStep2" style="display: none;">
+                    <h2 class="auth-form-title">Verify Email</h2>
+                    <p class="auth-form-subtitle">
+                        Code sent to <span id="memberTargetEmail" style="color: #c4b5fd; font-weight: 700;"></span>
+                    </p>
+
+                    <form onsubmit="handleMemberVerifyOTP(event)">
+                        <div class="auth-input-field">
+                            <input type="text" id="member_otp_code" maxlength="6" placeholder="••••••" class="auth-input" style="font-size: 24px; font-family: var(--font-mono); font-weight: 800; letter-spacing: 8px; text-align: center; padding: 14px !important;" required>
+                        </div>
+
+                        <div id="authStatus2" class="connection-status" style="margin-bottom: 12px;"></div>
+
+                        <button type="submit" id="memberVerifyBtn" class="auth-btn-primary">
+                            Verify & Enter Platform &rarr;
+                        </button>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+                            <button type="button" class="btn-outline" style="background: transparent; color: #8c859f; border-color: #3c344d; font-size: 12px;" onclick="switchMemberToStep1()">
+                                &larr; Back
+                            </button>
+                            <button type="button" class="btn-outline" style="background: transparent; color: #c4b5fd; border-color: #3c344d; font-size: 12px;" onclick="resendMemberOTP()">
+                                ↻ Resend Code
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -1448,13 +1720,13 @@
         }
 
         // Modal Open / Close Handlers
-        let activeAuthMode = 'signin';
+        let activeAuthMode = 'signup';
         let activeMemberEmail = '';
         let activeMemberFirstName = '';
         let activeMemberLastName = '';
         let activeMemberOrg = '';
 
-        function openAuthModal(mode = 'signin') {
+        function openAuthModal(mode = 'signup') {
             document.getElementById('authModal').style.display = 'flex';
             switchAuthTab(mode);
         }
@@ -1483,51 +1755,19 @@
 
         function switchAuthTab(tab) {
             activeAuthMode = tab;
-            const tabSignIn = document.getElementById('authTabSignIn');
-            const tabSignUp = document.getElementById('authTabSignUp');
             const contentSignIn = document.getElementById('authSignInContent');
             const contentSignUp = document.getElementById('authSignUpContent');
             const step2 = document.getElementById('memberOtpStep2');
-            const mainTitle = document.getElementById('modalMainTitle');
-            const subTitle = document.getElementById('modalSubTitle');
 
             if (step2) step2.style.display = 'none';
             clearAuthNotice();
 
-            if (tab === 'signup') {
-                if (tabSignUp) {
-                    tabSignUp.style.setProperty('background', '#ffffff', 'important');
-                    tabSignUp.style.setProperty('color', '#000000', 'important');
-                    tabSignUp.style.borderColor = '#000000';
-                    tabSignUp.style.fontWeight = '700';
-                }
-                if (tabSignIn) {
-                    tabSignIn.style.setProperty('background', '#f8fafc', 'important');
-                    tabSignIn.style.setProperty('color', 'var(--text-muted)', 'important');
-                    tabSignIn.style.borderColor = 'transparent';
-                    tabSignIn.style.fontWeight = '600';
-                }
-                if (contentSignIn) contentSignIn.style.display = 'none';
-                if (contentSignUp) contentSignUp.style.display = 'block';
-                if (mainTitle) mainTitle.innerText = 'Create SRE Copilot Account';
-                if (subTitle) subTitle.innerText = 'Start autonomous incident remediation for your fleet';
-            } else {
-                if (tabSignIn) {
-                    tabSignIn.style.setProperty('background', '#ffffff', 'important');
-                    tabSignIn.style.setProperty('color', '#000000', 'important');
-                    tabSignIn.style.borderColor = '#000000';
-                    tabSignIn.style.fontWeight = '700';
-                }
-                if (tabSignUp) {
-                    tabSignUp.style.setProperty('background', '#f8fafc', 'important');
-                    tabSignUp.style.setProperty('color', 'var(--text-muted)', 'important');
-                    tabSignUp.style.borderColor = 'transparent';
-                    tabSignUp.style.fontWeight = '600';
-                }
+            if (tab === 'signin') {
                 if (contentSignIn) contentSignIn.style.display = 'block';
                 if (contentSignUp) contentSignUp.style.display = 'none';
-                if (mainTitle) mainTitle.innerText = 'Sign In to SRE Copilot';
-                if (subTitle) subTitle.innerText = 'Connect to manage your autonomous service reliability';
+            } else {
+                if (contentSignIn) contentSignIn.style.display = 'none';
+                if (contentSignUp) contentSignUp.style.display = 'block';
             }
         }
 
@@ -1737,7 +1977,7 @@
                     statusDiv.style.textAlign = 'center';
                     statusDiv.innerText = data.error || 'Failed to dispatch verification code.';
                     btn.disabled = false;
-                    btn.innerText = 'Create Account & Send Code →';
+                    btn.innerText = 'Create account';
                 }
             } catch (err) {
                 statusDiv.style.display = 'block';
@@ -1751,7 +1991,7 @@
                 statusDiv.style.textAlign = 'center';
                 statusDiv.innerText = 'Network error: ' + err.message;
                 btn.disabled = false;
-                btn.innerText = 'Create Account & Send Code →';
+                btn.innerText = 'Create account';
             }
         }
 
@@ -1834,11 +2074,11 @@
             if (activeAuthMode === 'signup') {
                 document.getElementById('authSignUpContent').style.display = 'block';
                 const btn = document.getElementById('signupSubmitBtn');
-                if (btn) { btn.disabled = false; btn.innerText = 'Create Account & Send Code →'; }
+                if (btn) { btn.disabled = false; btn.innerText = 'Create account'; }
             } else {
                 document.getElementById('authSignInContent').style.display = 'block';
                 const btn = document.getElementById('emailSendOtpBtn');
-                if (btn) { btn.disabled = false; btn.innerText = 'Send Verification Code →'; }
+                if (btn) { btn.disabled = false; btn.innerText = 'Log in with Email Code →'; }
             }
         }
 
