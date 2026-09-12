@@ -296,6 +296,33 @@ async def auth_google(payload: GoogleAuthPayload, response: Response):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": f"Authentication failed: {str(e)}"})
 
+@app.get("/api/v1/auth/smtp-status")
+async def get_smtp_status():
+    from dotenv import load_dotenv
+    load_dotenv(override=False)
+    secret_files = []
+    if os.path.isdir("/etc/secrets"):
+        try:
+            secret_files = os.listdir("/etc/secrets")
+            for fname in secret_files:
+                fpath = os.path.join("/etc/secrets", fname)
+                if os.path.isfile(fpath):
+                    load_dotenv(fpath, override=True)
+        except Exception as e:
+            secret_files = [f"error: {str(e)}"]
+
+    has_smtp_user = bool(os.getenv("SMTP_USER"))
+    has_smtp_pass = bool(os.getenv("SMTP_PASSWORD"))
+
+    return {
+        "smtp_configured": has_smtp_user and has_smtp_pass,
+        "smtp_user": (os.getenv("SMTP_USER", "")[:4] + "***") if has_smtp_user else None,
+        "smtp_host": os.getenv("SMTP_HOST", "smtp.gmail.com"),
+        "smtp_port": os.getenv("SMTP_PORT", "587"),
+        "etc_secrets_exists": os.path.isdir("/etc/secrets"),
+        "etc_secrets_files": secret_files
+    }
+
 @app.post("/api/v1/auth/otp/send")
 async def send_otp(payload: OTPSendPayload):
     email = (payload.email or "").strip().lower()

@@ -54,7 +54,11 @@ class OTPService:
         if sent_via_smtp:
             msg = "Verification code has been dispatched to your email address."
         else:
-            msg = f"Verification code generated (Code: {code}). Configure SMTP in .env for inbox delivery."
+            expose_dev = os.getenv("EXPOSE_DEV_OTP", "false").lower() in ["true", "1", "yes"]
+            if expose_dev:
+                msg = f"Verification code generated (Code: {code}). Configure SMTP in .env for inbox delivery."
+            else:
+                msg = "Verification code generated. If email delivery is not configured, please check server logs."
 
         return code, sent_via_smtp, msg
 
@@ -85,7 +89,7 @@ class OTPService:
         attempts = OTPRepository.increment_attempts(email)
         if attempts > 5:
             OTPRepository.delete_otp(email)
-            return False, "Too many failed attempts. For your security, this code has been revoked. Request a new code."
+            return False, "Too many failed attempts. This verification code has been revoked."
 
         if not secrets.compare_digest(record["code"], code):
             remaining = max(0, 5 - attempts)
@@ -102,11 +106,26 @@ class OTPService:
         """
         smtp_user = os.getenv("SMTP_USER", "").strip()
         smtp_pass = os.getenv("SMTP_PASSWORD", "").strip()
+
+        # Fallback: scan /etc/secrets directory if on Render and not yet in environment
+        if not smtp_user or not smtp_pass:
+            if os.path.isdir("/etc/secrets"):
+                from dotenv import load_dotenv
+                try:
+                    for fname in os.listdir("/etc/secrets"):
+                        fpath = os.path.join("/etc/secrets", fname)
+                        if os.path.isfile(fpath):
+                            load_dotenv(fpath, override=True)
+                except Exception as e:
+                    logger.warning(f"Error reading /etc/secrets: {e}")
+                smtp_user = os.getenv("SMTP_USER", "").strip()
+                smtp_pass = os.getenv("SMTP_PASSWORD", "").strip()
+
         smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com").strip()
         smtp_port = int(os.getenv("SMTP_PORT", "587"))
 
         if not smtp_user or not smtp_pass:
-            logger.info(f"[AUTH OTP] SMTP not configured. Generated verification code for {recipient}: {code}")
+            logger.info(f"[AUTH OTP] SMTP not configured (SMTP_USER: {'set' if smtp_user else 'missing'}, SMTP_PASSWORD: {'set' if smtp_pass else 'missing'}). Generated verification code for {recipient}: {code}")
             return False
 
         try:
