@@ -529,8 +529,11 @@
                     </div>
 
                     <div style="margin-bottom: 18px;">
-                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px;">Admin Access Key (Optional)</label>
-                        <input type="password" id="admin_key" placeholder="Enter key if configured in .env" style="width: 100%; padding: 10px 12px; font-size: 13.5px; border: 1px solid var(--border-dark); border-radius: 6px; outline: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <label style="font-size: 12px; font-weight: 700;">Admin Master Key</label>
+                            <span style="font-size: 10px; font-weight: 700; color: #991b1b; background: #fee2e2; border: 1px solid #fecaca; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">2FA Required</span>
+                        </div>
+                        <input type="password" id="admin_key" placeholder="Enter server master key" style="width: 100%; padding: 10px 12px; font-size: 13.5px; border: 1px solid var(--border-dark); border-radius: 6px; outline: none;" required>
                     </div>
 
                     <div id="adminStep1Status" style="display: none; padding: 10px; border-radius: 6px; font-size: 12.5px; margin-bottom: 14px;"></div>
@@ -544,6 +547,9 @@
             <!-- Step 2: Verify 6-Digit OTP -->
             <div id="adminStep2" style="display: none;">
                 <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 18px; text-align: center;">
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-bottom: 8px;">
+                        🔐 2FA Step 2: Email Verification
+                    </div>
                     <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Code dispatched to:</p>
                     <p id="adminTargetEmail" style="font-size: 14px; font-weight: 700; margin: 4px 0 0 0; color: #000;"></p>
                 </div>
@@ -1033,12 +1039,29 @@
             if (e) e.preventDefault();
             const emailInput = document.getElementById('admin_email');
             const keyInput = document.getElementById('admin_key');
-            const email = emailInput.value.trim();
-            const admin_key = keyInput.value.trim();
+            const email = (emailInput && emailInput.value ? emailInput.value : activeAdminEmail).trim();
+            const admin_key = (keyInput && keyInput.value ? keyInput.value : activeAdminKey).trim();
             const btn = document.getElementById('adminSendOtpBtn');
             const statusDiv = document.getElementById('adminStep1Status');
 
-            if (!email) return;
+            if (!email) {
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = 'var(--danger-bg)';
+                statusDiv.style.color = 'var(--danger)';
+                statusDiv.style.border = '1px solid #fecaca';
+                statusDiv.innerText = 'Please enter your administrator email address.';
+                return;
+            }
+
+            if (!admin_key) {
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = 'var(--danger-bg)';
+                statusDiv.style.color = 'var(--danger)';
+                statusDiv.style.border = '1px solid #fecaca';
+                statusDiv.innerText = 'Admin Master Key is required for two-factor authentication.';
+                return;
+            }
+
             activeAdminEmail = email;
             activeAdminKey = admin_key;
 

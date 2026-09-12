@@ -47,12 +47,14 @@ def test_otp_member_flow(client):
     assert second_verify.status_code == 400
 
 def test_otp_admin_unauthorized_email(client, monkeypatch):
+    admin_key = "secret_key_123"
     monkeypatch.setenv("ADMIN_EMAIL", "real.admin@acme.com")
+    monkeypatch.setenv("ADMIN_KEY", admin_key)
     
-    # Non-admin email attempting admin OTP request must be blocked
+    # Non-admin email attempting admin OTP request must be blocked even with valid key
     resp = client.post(
         "/api/v1/auth/otp/send",
-        json={"email": "attacker@evil.com", "purpose": "admin_login"}
+        json={"email": "attacker@evil.com", "purpose": "admin_login", "admin_key": admin_key}
     )
     assert resp.status_code == 403
     assert "not authorized as a platform administrator" in resp.json()["error"]
@@ -101,28 +103,58 @@ def test_otp_admin_authorized_flow(client, monkeypatch):
     assert dash_resp.status_code == 200
     assert "Platform Control Center" in dash_resp.text
 
-def test_otp_admin_optional_key_flow(client, monkeypatch):
-    """Test that an authorized admin can sign in via OTP without entering the optional admin key."""
+def test_otp_admin_2fa_enforcement(client, monkeypatch):
+    """Test that both factors (Admin Master Key and Email OTP) are strictly enforced for 2FA."""
     admin_email = "super.admin@company.com"
+    admin_key = "server_master_2fa_secret"
     monkeypatch.setenv("ADMIN_EMAIL", admin_email)
-    monkeypatch.setenv("ADMIN_KEY", "configured_server_secret")
+    monkeypatch.setenv("ADMIN_KEY", admin_key)
 
-    # 1. Request OTP without providing admin_key
-    send_resp = client.post(
+    # 1. Request OTP without admin_key -> blocked with 401
+    missing_key_resp = client.post(
         "/api/v1/auth/otp/send",
         json={"email": admin_email, "purpose": "admin_login"}
+    )
+    assert missing_key_resp.status_code == 401
+    assert "Invalid or missing Admin Master Key" in missing_key_resp.json()["error"]
+
+    # 2. Request OTP with invalid admin_key -> blocked with 401
+    bad_key_resp = client.post(
+        "/api/v1/auth/otp/send",
+        json={"email": admin_email, "purpose": "admin_login", "admin_key": "wrong_key"}
+    )
+    assert bad_key_resp.status_code == 401
+    assert "Invalid or missing Admin Master Key" in bad_key_resp.json()["error"]
+
+    # 3. Request OTP with valid admin_key -> success
+    send_resp = client.post(
+        "/api/v1/auth/otp/send",
+        json={"email": admin_email, "purpose": "admin_login", "admin_key": admin_key}
     )
     assert send_resp.status_code == 200
     code = send_resp.json().get("dev_code")
     assert code is not None
 
-    # 2. Verify OTP without providing admin_key
-    verify_resp = client.post(
+    # 4. Verify OTP without admin_key -> blocked with 401
+    verify_no_key_resp = client.post(
         "/api/v1/auth/otp/verify",
         json={
             "email": admin_email,
             "code": code,
             "purpose": "admin_login"
+        }
+    )
+    assert verify_no_key_resp.status_code == 401
+    assert "Invalid or missing Admin Master Key" in verify_no_key_resp.json()["error"]
+
+    # 5. Verify OTP with correct admin_key -> success
+    verify_resp = client.post(
+        "/api/v1/auth/otp/verify",
+        json={
+            "email": admin_email,
+            "code": code,
+            "purpose": "admin_login",
+            "admin_key": admin_key
         }
     )
     assert verify_resp.status_code == 200

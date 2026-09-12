@@ -407,10 +407,10 @@ async def send_otp(payload: OTPSendPayload):
         configured_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
         configured_key = os.getenv("ADMIN_KEY") or os.getenv("API_KEY")
 
-        # Validate Admin Key if configured
-        if configured_key and payload.admin_key:
-            if payload.admin_key.strip() != configured_key:
-                return JSONResponse(status_code=401, content={"error": "Invalid Admin Access Key."})
+        # 2FA Enforcement: Validate Admin Master Key if configured
+        if configured_key:
+            if not payload.admin_key or payload.admin_key.strip() != configured_key:
+                return JSONResponse(status_code=401, content={"error": "Invalid or missing Admin Master Key."})
 
         # Check authorization of email
         is_admin_allowed = False
@@ -452,8 +452,12 @@ async def verify_otp(payload: OTPVerifyPayload, response: Response):
     code = (payload.code or "").strip()
     purpose = payload.purpose or "member_login"
 
-    if not email or not code:
-        return JSONResponse(status_code=400, content={"error": "Email and 6-digit verification code are required."})
+    # For admin login, enforce Admin Master Key before consuming OTP
+    if purpose == "admin_login":
+        configured_key = os.getenv("ADMIN_KEY") or os.getenv("API_KEY")
+        if configured_key:
+            if not payload.admin_key or payload.admin_key.strip() != configured_key:
+                return JSONResponse(status_code=401, content={"error": "Invalid or missing Admin Master Key."})
 
     success, msg = OTPService.verify_otp(email=email, code=code, purpose=purpose)
     if not success:
@@ -462,10 +466,6 @@ async def verify_otp(payload: OTPVerifyPayload, response: Response):
     name = payload.name or email.split("@")[0]
 
     if purpose == "admin_login":
-        configured_key = os.getenv("ADMIN_KEY") or os.getenv("API_KEY")
-        if configured_key and payload.admin_key:
-            if payload.admin_key.strip() != configured_key:
-                return JSONResponse(status_code=401, content={"error": "Invalid Admin Access Key."})
 
         configured_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
         is_admin_allowed = False
