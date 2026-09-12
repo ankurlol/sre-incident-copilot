@@ -216,15 +216,23 @@
         /* ------------------------------------------------------------- */
         /* LANDING PAGE (Unauthenticated View)                           */
         /* ------------------------------------------------------------- */
-        .hero-section {
+        /* ------------------------------------------------------------- */
+        /* WEAVERLY-STYLE INTERACTIVE FLUID HERO (Exact Video Match)     */
+        /* ------------------------------------------------------------- */
+        .weaverly-hero {
             position: relative;
-            padding: 100px 0 80px;
-            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             overflow: hidden;
-            background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(110, 70, 230, 0.22) 0%, transparent 70%);
+            padding: 32px 56px 28px 56px;
+            background: #080612;
+            color: #ffffff;
+            box-sizing: border-box;
         }
 
-        #hero-webgl-canvas {
+        #hero-fluid-canvas {
             position: absolute;
             top: 0;
             left: 0;
@@ -232,13 +240,248 @@
             height: 100%;
             pointer-events: none;
             z-index: 1;
-            opacity: 0.3;
         }
 
-        .hero-content {
-            position: relative;
+        .weaverly-vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 75% 50%, rgba(8, 6, 18, 0.1) 0%, rgba(8, 6, 18, 0.45) 80%, rgba(8, 6, 18, 0.75) 100%);
+            pointer-events: none;
             z-index: 2;
         }
+
+        .weaverly-top-row {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            gap: 24px;
+        }
+
+        .weaverly-brand-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .weaverly-tagline {
+            font-size: 14px;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 400;
+            max-width: 290px;
+            letter-spacing: -0.01em;
+            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .weaverly-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-weaverly-white {
+            background: #ffffff !important;
+            color: #080612 !important;
+            border: 1px solid #ffffff !important;
+            padding: 10px 22px !important;
+            border-radius: 9999px !important;
+            font-size: 13.5px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            text-decoration: none !important;
+        }
+        .btn-weaverly-white:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.3) !important;
+            background: #f4f4f5 !important;
+        }
+
+        .btn-weaverly-ghost {
+            background: rgba(255, 255, 255, 0.12) !important;
+            backdrop-filter: blur(12px);
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            padding: 10px 22px !important;
+            border-radius: 9999px !important;
+            font-size: 13.5px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            text-decoration: none !important;
+        }
+        .btn-weaverly-ghost:hover {
+            background: rgba(255, 255, 255, 0.22) !important;
+            border-color: rgba(255, 255, 255, 0.4) !important;
+        }
+
+        /* Center-Right Service Display */
+        .weaverly-center-content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            width: 100%;
+            padding: 24px 0;
+            margin: auto 0;
+        }
+
+        .weaverly-service-card {
+            max-width: 640px;
+            text-align: left;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        .weaverly-service-badge {
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+
+        .weaverly-service-title {
+            font-size: 64px;
+            font-weight: 700;
+            line-height: 1.05;
+            letter-spacing: -0.035em;
+            color: #ffffff;
+            margin-bottom: 18px;
+            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .weaverly-service-desc {
+            font-size: 16.5px;
+            line-height: 1.65;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 28px;
+            max-width: 540px;
+            text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .weaverly-service-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        /* Bottom Floating Dock & Brand Logos */
+        .weaverly-bottom-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 18px;
+        }
+
+        .weaverly-dock {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(14, 11, 24, 0.55);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 9999px;
+            padding: 6px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .dock-tab {
+            background: transparent !important;
+            border: none !important;
+            border-radius: 9999px !important;
+            padding: 10px 22px !important;
+            font-size: 13.5px !important;
+            font-weight: 500 !important;
+            color: rgba(255, 255, 255, 0.72) !important;
+            cursor: pointer !important;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            white-space: nowrap !important;
+            box-shadow: none !important;
+        }
+
+        .dock-tab:hover {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .dock-tab.active {
+            background: #ffffff !important;
+            color: #080612 !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25) !important;
+        }
+
+        .weaverly-partners {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 36px;
+            flex-wrap: wrap;
+            opacity: 0.72;
+            padding-bottom: 6px;
+        }
+
+        .partner-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.85);
+            letter-spacing: 0.02em;
+        }
+
+        .partner-item svg {
+            fill: currentColor;
+            opacity: 0.85;
+        }
+
+        @media (max-width: 900px) {
+            .weaverly-hero {
+                padding: 24px 20px 20px;
+                min-height: auto;
+            }
+            .weaverly-top-row {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .weaverly-center-content {
+                justify-content: flex-start;
+                margin: 36px 0;
+            }
+            .weaverly-service-title {
+                font-size: 40px;
+            }
+            .weaverly-dock {
+                border-radius: 12px;
+                width: 100%;
+                justify-content: flex-start;
+            }
+            .weaverly-partners {
+                gap: 18px;
+            }
+        }
+
 
         /* Live Marquee Ticker */
         .ticker-wrap {
@@ -841,14 +1084,24 @@
         .auth-visual-panel {
             border-radius: 14px;
             overflow: hidden;
-            background: linear-gradient(180deg, rgba(25, 18, 42, 0.45) 0%, rgba(16, 12, 28, 0.88) 100%),
-                        url('https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1000&q=80') center/cover no-repeat;
+            background: radial-gradient(circle at 85% 20%, rgba(0, 200, 83, 0.75) 0%, transparent 45%),
+                        radial-gradient(circle at 20% 75%, rgba(124, 77, 255, 0.85) 0%, transparent 55%),
+                        radial-gradient(circle at 55% 50%, rgba(3, 0, 128, 0.9) 0%, transparent 65%),
+                        #080614;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             padding: 24px 22px;
             min-height: 520px;
             position: relative;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6);
+        }
+        .auth-visual-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(8, 6, 18, 0.2) 0%, rgba(8, 6, 18, 0.65) 100%);
+            pointer-events: none;
         }
 
         .auth-visual-header {
@@ -1204,7 +1457,8 @@
 </head>
 <body>
 
-    <!-- Top Navigation -->
+    <!-- Top Navigation (Authenticated User Bar) -->
+    {% if is_authenticated %}
     <nav class="navbar">
         <div class="container nav-content">
             <a href="/" class="nav-brand">
@@ -1212,22 +1466,6 @@
                 <div class="brand-text">SRE Copilot</div>
             </a>
 
-            {% if not is_authenticated %}
-            <ul class="nav-links">
-                <li><a href="#services">Services</a></li>
-                <li><a href="#how-it-works">How It Works</a></li>
-                <li><a href="#architecture">Architecture</a></li>
-            </ul>
-
-            <div class="nav-auth">
-                <button type="button" class="btn-outline" onclick="openAuthModal('signin')">
-                    Sign In
-                </button>
-                <button type="button" onclick="openAuthModal('signup')">
-                    Get Started &rarr;
-                </button>
-            </div>
-            {% else %}
             <div class="nav-auth">
                 <div class="pill-badge" style="gap: 8px;">
                     {% if current_user.picture %}
@@ -1243,59 +1481,112 @@
                 <button type="button" onclick="openCreateProjectModal()">+ New Project</button>
                 <button type="button" class="btn-outline" onclick="handleLogout()">Sign Out</button>
             </div>
-            {% endif %}
         </div>
     </nav>
+    {% endif %}
 
     <!-- ----------------------------------------------------------------- -->
     <!-- VIEW A: CLASSY PUBLIC LANDING PAGE (When User is NOT Logged In)   -->
     <!-- All user projects & incidents are completely hidden from public   -->
     <!-- ----------------------------------------------------------------- -->
+    <!-- ----------------------------------------------------------------- -->
+    <!-- VIEW A: WEAVERLY-STYLE FLUID LANDING PAGE (Unauthenticated)       -->
+    <!-- ----------------------------------------------------------------- -->
     {% if not is_authenticated %}
 
-    <!-- Full-width dunes hero strip behind navbar -->
-    <div style="position:relative; min-height:640px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; overflow:hidden; padding: 120px 24px 100px;">
-        <!-- Desert dunes background -->
-        <div style="position:absolute;inset:0; background: linear-gradient(180deg, rgba(14,11,22,0.55) 0%, rgba(14,11,22,0.80) 55%, #0e0b16 100%), url('https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat; pointer-events:none;"></div>
-        <!-- Violet radial glow -->
-        <div style="position:absolute;inset:0; background: radial-gradient(ellipse 70% 60% at 50% 30%, rgba(110,70,230,0.28) 0%, transparent 65%); pointer-events:none;"></div>
-        <canvas id="hero-webgl-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0.2;z-index:1;"></canvas>
+    <!-- Full-viewport Weaverly Interactive Fluid Hero -->
+    <section class="weaverly-hero">
+        <canvas id="hero-fluid-canvas"></canvas>
+        <div class="weaverly-vignette"></div>
 
-        <div style="position:relative; z-index:2; max-width:900px;">
-            <div class="pill-badge" style="margin: 0 auto 20px;">
-                <span style="width: 7px; height: 7px; background: #34d399; border-radius: 50%; box-shadow: 0 0 8px rgba(52,211,153,0.8);"></span>
-                Autonomous Cloud Reliability Platform
+        <!-- Top Navigation Row: Brand + Tagline (Left) & Auth Buttons (Right) -->
+        <div class="weaverly-top-row">
+            <div class="weaverly-brand-col">
+                <a href="/" style="text-decoration: none; display: inline-flex; align-items: center; gap: 10px;">
+                    <div class="brand-icon" style="width: 32px; height: 32px; font-size: 15px;">S</div>
+                    <span style="font-size: 19px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em;">SRE Copilot</span>
+                </a>
+                <div class="weaverly-tagline">
+                    SRE Copilot enables zero-touch incident remediation and autonomous reliability that fuels uninterrupted uptime.
+                </div>
             </div>
 
-            <h1 class="hero-title">
-                Zero Downtime.<br>
-                <span class="accent">Autonomous Reliability.</span>
-            </h1>
-
-            <p class="hero-subtitle">
-                Ingest production crashes, run Hybrid RAG root cause analysis, evaluate database migration guardrails, and autonomously trigger GitHub rollbacks — all within <strong style="color:#c4b5fd;">42 seconds</strong>.
-            </p>
-
-            <div class="hero-cta">
-                <button type="button" class="btn-lg" onclick="openAuthModal('signup')">
-                    Start for Free &rarr;
-                </button>
-                <button type="button" class="btn-lg btn-outline" onclick="openAuthModal('signin')">
+            <div class="weaverly-nav-actions">
+                <button type="button" class="btn-weaverly-ghost" onclick="openAuthModal('signin')">
                     Sign In
                 </button>
-            </div>
-
-            <!-- Trust badges -->
-            <div style="margin-top:48px; display:flex; align-items:center; justify-content:center; gap:32px; flex-wrap:wrap; opacity:0.65;">
-                <span style="font-size:12px; font-weight:600; color:var(--text-muted); letter-spacing:0.04em; text-transform:uppercase;">Integrates with</span>
-                <span style="font-size:13px; font-weight:700; color:var(--text-muted);">Sentry</span>
-                <span style="font-size:13px; font-weight:700; color:var(--text-muted);">Datadog</span>
-                <span style="font-size:13px; font-weight:700; color:var(--text-muted);">Prometheus</span>
-                <span style="font-size:13px; font-weight:700; color:var(--text-muted);">GitHub Actions</span>
-                <span style="font-size:13px; font-weight:700; color:var(--text-muted);">CloudWatch</span>
+                <button type="button" class="btn-weaverly-white" onclick="openAuthModal('signup')">
+                    Get Started &rarr;
+                </button>
             </div>
         </div>
-    </div>
+
+        <!-- Center-Right: Dynamic Service Title, Subtitle, and Action -->
+        <div class="weaverly-center-content">
+            <div class="weaverly-service-card" id="weaverlyServiceCard">
+                <span class="weaverly-service-badge" id="weaverlyServiceBadge">Service 01 / 04 · Autonomous Analysis</span>
+                <h1 class="weaverly-service-title" id="weaverlyServiceTitle">Inference &amp; RAG RCA</h1>
+                <p class="weaverly-service-desc" id="weaverlyServiceDesc">
+                    Provide superior incident inference at scale across production microservices. Combines Sparse BM25 and Dense Vector search to pinpoint root causes in seconds without engineer burnout.
+                </p>
+                <div class="weaverly-service-actions">
+                    <button type="button" class="btn-weaverly-white btn-lg" onclick="openAuthModal('signup')">
+                        Connect Monitored Service &rarr;
+                    </button>
+                    <button type="button" class="btn-weaverly-ghost btn-lg" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">
+                        Explore Capabilities
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom: Interactive Dock / Tab Bar + Integration Logo Row -->
+        <div class="weaverly-bottom-container">
+            <div class="weaverly-dock" id="weaverlyDock">
+                <button type="button" class="dock-tab active" onclick="selectWeaverlyService(0)">
+                    Inference &amp; RAG
+                </button>
+                <button type="button" class="dock-tab" onclick="selectWeaverlyService(1)">
+                    Migration Guardrails
+                </button>
+                <button type="button" class="dock-tab" onclick="selectWeaverlyService(2)">
+                    GitOps Rollback
+                </button>
+                <button type="button" class="dock-tab" onclick="selectWeaverlyService(3)">
+                    Live Telemetry
+                </button>
+            </div>
+
+            <!-- Partner / Integration Logos (Matching AMD, Epic, Nvidia, Intel strip in recording) -->
+            <div class="weaverly-partners">
+                <div class="partner-item">
+                    <svg height="18" width="18" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                    <span>GitHub Actions</span>
+                </div>
+                <div class="partner-item">
+                    <svg height="16" width="16" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-6h-2v6zm0-8h2V7h-2v2z"/></svg>
+                    <span>Sentry</span>
+                </div>
+                <div class="partner-item">
+                    <svg height="16" width="16" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5 10 5 10-5-5-2.5-5 2.5z"/></svg>
+                    <span>Datadog</span>
+                </div>
+                <div class="partner-item">
+                    <svg height="16" width="16" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    <span>Prometheus</span>
+                </div>
+                <div class="partner-item">
+                    <svg height="16" width="16" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
+                    <span>CloudWatch</span>
+                </div>
+                <div class="partner-item">
+                    <svg height="16" width="16" viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5zm0 2.24l6.75 3.75v7.5L12 19.24 5.25 15.49v-7.5L12 4.24z"/></svg>
+                    <span>Kubernetes</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
 
     <main class="container">
         <!-- Live Telemetry Marquee Ticker -->
@@ -1617,14 +1908,12 @@
     <!-- ----------------------------------------------------------------- -->
     <div id="authModal" class="modal-backdrop">
         <div class="auth-split-modal">
-            <!-- Left: Visual Atmosphere Panel (Desert Dunes Twilight) -->
+            <!-- Left: Visual Atmosphere Panel (Weaverly-Style Fluid Chromatic Mesh) -->
             <div class="auth-visual-panel">
                 <div class="auth-visual-header">
                     <div class="auth-visual-logo">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                        </svg>
-                        <span>SRE</span>
+                        <div class="brand-icon" style="width: 28px; height: 28px; font-size: 13px;">S</div>
+                        <span>SRE Copilot</span>
                     </div>
                     <button type="button" class="btn-back-website" onclick="closeAuthModal()">
                         Back to website &rarr;
@@ -1632,7 +1921,7 @@
                 </div>
 
                 <div class="auth-visual-footer">
-                    <h3 class="auth-visual-title">Autonomous Reliability,<br>Creating Uptime</h3>
+                    <h3 class="auth-visual-title">Autonomous Reliability,<br>Zero-Touch Uptime</h3>
                     <div class="auth-carousel-dots">
                         <span class="auth-carousel-dot active"></span>
                         <span class="auth-carousel-dot inactive"></span>
@@ -2434,132 +2723,296 @@
                 console.warn('Lenis scroll init:', e);
             }
         }
-        // --- Portfolio Tech: Three.js 3D Microservice Mesh (Hero Background) ---
+        // --- Weaverly Fluid Chromatic Shader Engine & Interactive Service Controller ---
+        const heroServicesData = [
+            {
+                badge: "Service 01 / 04 · Autonomous Analysis",
+                title: "Inference &amp; RAG RCA",
+                desc: "Provide superior incident inference at scale across production microservices. Combines Sparse BM25 and Dense Vector search to pinpoint root causes in seconds without engineer burnout."
+            },
+            {
+                badge: "Service 02 / 04 · Enterprise Safety",
+                title: "Migration Guardrails",
+                desc: "Enterprise safety filters automatically detect schema migrations and anti-flapping limits, preventing destructive database corruption while reducing blast radius and downtime."
+            },
+            {
+                badge: "Service 03 / 04 · Automated Remediation",
+                title: "GitOps Rollback",
+                desc: "Deliver instant rollbacks 40 times faster at reduced risk. Automatically dispatches GitHub Actions workflows to redeploy the last verified stable commit SHA within 42 seconds."
+            },
+            {
+                badge: "Service 04 / 04 · Multi-Source Ingestion",
+                title: "Live Telemetry Stream",
+                desc: "Stream real-time crash stack traces and health metrics seamlessly from Sentry, Datadog, CloudWatch, and Prometheus into an isolated, PII-redacted operational pipeline."
+            }
+        ];
+
+        let activeServiceIdx = 0;
+        let weaverlyAutoCycle = null;
+
+        function selectWeaverlyService(idx, isManual = true) {
+            if (idx === activeServiceIdx && isManual) return;
+            activeServiceIdx = idx;
+
+            // 1. Update tab states
+            const tabs = document.querySelectorAll('.dock-tab');
+            tabs.forEach((tab, i) => {
+                if (i === idx) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+
+            // 2. Transition Shader Palette
+            if (window.setHeroPalette) {
+                window.setHeroPalette(idx);
+            }
+
+            // 3. Smooth Typography Transition
+            const card = document.getElementById('weaverlyServiceCard');
+            const badge = document.getElementById('weaverlyServiceBadge');
+            const title = document.getElementById('weaverlyServiceTitle');
+            const desc = document.getElementById('weaverlyServiceDesc');
+
+            if (card && title && desc && badge) {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(10px)';
+
+                setTimeout(() => {
+                    badge.innerHTML = heroServicesData[idx].badge;
+                    title.innerHTML = heroServicesData[idx].title;
+                    desc.innerHTML = heroServicesData[idx].desc;
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 220);
+            }
+
+            if (isManual && weaverlyAutoCycle) {
+                clearInterval(weaverlyAutoCycle);
+                startWeaverlyAutoCycle();
+            }
+        }
+
+        function startWeaverlyAutoCycle() {
+            weaverlyAutoCycle = setInterval(() => {
+                const next = (activeServiceIdx + 1) % heroServicesData.length;
+                selectWeaverlyService(next, false);
+            }, 7000);
+        }
+
         function initHeroThreeJS() {
-            const canvas = document.getElementById('hero-webgl-canvas');
+            const canvas = document.getElementById('hero-fluid-canvas');
             if (!canvas || typeof THREE === 'undefined') return;
 
             const parent = canvas.parentElement;
             if (!parent) return;
 
             const width = parent.clientWidth || window.innerWidth;
-            const height = parent.clientHeight || 450;
+            const height = parent.clientHeight || window.innerHeight;
 
             const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-            camera.position.z = 110;
+            const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
             let renderer;
             try {
-                renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+                renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: false, antialias: true });
                 renderer.setSize(width, height);
                 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             } catch (e) {
-                console.warn('WebGL initialization failed:', e);
+                console.warn('WebGL init error:', e);
                 return;
             }
 
-            const nodeCount = 42;
-            const geometry = new THREE.BufferGeometry();
-            const positions = new Float32Array(nodeCount * 3);
-            const velocities = [];
+            const vertexShader = `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = vec4(position, 1.0);
+                }
+            `;
 
-            for (let i = 0; i < nodeCount; i++) {
-                positions[i * 3] = (Math.random() - 0.5) * 150;
-                positions[i * 3 + 1] = (Math.random() - 0.5) * 80;
-                positions[i * 3 + 2] = (Math.random() - 0.5) * 60;
-                velocities.push({
-                    x: (Math.random() - 0.5) * 0.08,
-                    y: (Math.random() - 0.5) * 0.08,
-                    z: (Math.random() - 0.5) * 0.08
-                });
-            }
+            // Organic Chromatic Fluid Shader with Domain Warping
+            const fragmentShader = `
+                uniform float u_time;
+                uniform vec2 u_resolution;
+                uniform vec2 u_mouse;
+                uniform vec3 u_colorA;
+                uniform vec3 u_colorB;
+                uniform vec3 u_colorC;
+                uniform vec3 u_colorD;
+                varying vec2 vUv;
 
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
 
-            const pMaterial = new THREE.PointsMaterial({
-                color: 0x09090b,
-                size: 3.5,
-                transparent: true,
-                opacity: 0.6
+                float snoise(vec2 v){
+                    const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                                    -0.577350269189626, 0.024390243902439);
+                    vec2 i  = floor(v + dot(v, C.yy) );
+                    vec2 x0 = v -   i + dot(i, C.xx);
+                    vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+                    vec4 x12 = x0.xyxy + C.xxzz;
+                    x12.xy -= i1;
+                    i = mod(i, 289.0);
+                    vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
+                        + i.x + vec3(0.0, i1.x, 1.0 ));
+                    vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+                    m = m*m ;
+                    m = m*m ;
+                    vec3 x = 2.0 * fract(p * C.www) - 1.0;
+                    vec3 h = abs(x) - 0.5;
+                    vec3 ox = floor(x + 0.5);
+                    vec3 a0 = x - ox;
+                    m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+                    vec3 g;
+                    g.x  = a0.x  * x0.x  + h.x  * x0.y;
+                    g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+                    return 130.0 * dot(m, g);
+                }
+
+                float fbm(vec2 p) {
+                    float total = 0.0;
+                    float amp = 0.55;
+                    for (int i = 0; i < 4; i++) {
+                        total += snoise(p) * amp;
+                        p = p * 2.15 + vec2(12.3, 45.6);
+                        amp *= 0.5;
+                    }
+                    return total;
+                }
+
+                void main() {
+                    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+                    float aspect = u_resolution.x / u_resolution.y;
+                    vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
+
+                    vec2 m = (u_mouse - 0.5) * vec2(aspect, 1.0);
+                    float dM = length(p - m);
+                    float mouseEffect = smoothstep(0.5, 0.0, dM) * 0.18;
+
+                    float t = u_time * 0.16;
+
+                    // Dual domain warping
+                    float qx = fbm(p * 1.35 + vec2(t * 0.28, t * 0.2) + mouseEffect);
+                    float qy = fbm(p * 1.35 + vec2(-t * 0.22, t * 0.3));
+                    vec2 q = vec2(qx, qy);
+
+                    float rx = fbm(p * 1.6 + q * 1.3 + vec2(t * 0.15, -t * 0.18));
+                    float ry = fbm(p * 1.6 + q * 1.3 + vec2(-t * 0.14, t * 0.19));
+                    vec2 r = vec2(rx, ry);
+
+                    float f = fbm(p * 1.45 + r * 1.45);
+
+                    // Blend 4 vibrant chromatic layers
+                    vec3 col = mix(u_colorA, u_colorB, clamp((f * f) * 3.8, 0.0, 1.0));
+                    col = mix(col, u_colorC, clamp(length(q) * 1.1, 0.0, 1.0));
+                    col = mix(col, u_colorD, clamp(length(r.x) * 1.1, 0.0, 1.0));
+
+                    // Ambient vignette
+                    float vignette = 1.0 - smoothstep(0.3, 1.5, length(uv - 0.5));
+                    col *= (0.7 + 0.3 * vignette);
+
+                    gl_FragColor = vec4(col, 1.0);
+                }
+            `;
+
+            // 4 Palettes from the Screen Recording
+            const palettes = [
+                // 0: Inference & RAG RCA (Electric Blue, Deep Violet, Neon Green, Cyan)
+                {
+                    a: new THREE.Color('#030080'),
+                    b: new THREE.Color('#00c853'),
+                    c: new THREE.Color('#2979ff'),
+                    d: new THREE.Color('#7c4dff')
+                },
+                // 1: Migration Guardrails (Amber Sand, Golden Yellow, Oceanic Cobalt Blue, Teal)
+                {
+                    a: new THREE.Color('#e65100'),
+                    b: new THREE.Color('#0d47a1'),
+                    c: new THREE.Color('#ffb300'),
+                    d: new THREE.Color('#00b0ff')
+                },
+                // 2: GitOps Rollback (Crimson Red, Coral Orange, Electric Cyan, Deep Plum)
+                {
+                    a: new THREE.Color('#c62828'),
+                    b: new THREE.Color('#00b4d8'),
+                    c: new THREE.Color('#ff5722'),
+                    d: new THREE.Color('#3b0818')
+                },
+                // 3: Live Telemetry (Electric Violet, Neon Magenta, Deep Navy, Cyan)
+                {
+                    a: new THREE.Color('#4a148c'),
+                    b: new THREE.Color('#00e5ff'),
+                    c: new THREE.Color('#aa00ff'),
+                    d: new THREE.Color('#0a0024')
+                }
+            ];
+
+            let targetPaletteIdx = 0;
+            const currentColors = {
+                a: palettes[0].a.clone(),
+                b: palettes[0].b.clone(),
+                c: palettes[0].c.clone(),
+                d: palettes[0].d.clone()
+            };
+
+            const uniforms = {
+                u_time: { value: 0.0 },
+                u_resolution: { value: new THREE.Vector2(width, height) },
+                u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
+                u_colorA: { value: currentColors.a },
+                u_colorB: { value: currentColors.b },
+                u_colorC: { value: currentColors.c },
+                u_colorD: { value: currentColors.d }
+            };
+
+            const material = new THREE.ShaderMaterial({
+                vertexShader: vertexShader,
+                fragmentShader: fragmentShader,
+                uniforms: uniforms
             });
-            const pointCloud = new THREE.Points(geometry, pMaterial);
-            scene.add(pointCloud);
 
-            const lineMaterial = new THREE.LineBasicMaterial({
-                color: 0x94a3b8,
-                transparent: true,
-                opacity: 0.26
+            const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+            scene.add(quad);
+
+            const clock = new THREE.Clock();
+
+            window.addEventListener('mousemove', (e) => {
+                uniforms.u_mouse.value.x = e.clientX / window.innerWidth;
+                uniforms.u_mouse.value.y = 1.0 - (e.clientY / window.innerHeight);
             });
 
-            let linesMesh = null;
-            let mouseNormX = 0;
-            let mouseNormY = 0;
-
-            parent.addEventListener('mousemove', (e) => {
-                const rect = parent.getBoundingClientRect();
-                mouseNormX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-                mouseNormY = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-            });
+            window.setHeroPalette = function(idx) {
+                targetPaletteIdx = idx % palettes.length;
+            };
 
             function animate() {
                 requestAnimationFrame(animate);
+                uniforms.u_time.value = clock.getElapsedTime();
 
-                const pos = geometry.attributes.position.array;
-                for (let i = 0; i < nodeCount; i++) {
-                    pos[i * 3] += velocities[i].x;
-                    pos[i * 3 + 1] += velocities[i].y;
-                    pos[i * 3 + 2] += velocities[i].z;
-
-                    if (pos[i * 3] > 75 || pos[i * 3] < -75) velocities[i].x *= -1;
-                    if (pos[i * 3 + 1] > 40 || pos[i * 3 + 1] < -40) velocities[i].y *= -1;
-                    if (pos[i * 3 + 2] > 30 || pos[i * 3 + 2] < -30) velocities[i].z *= -1;
-                }
-                geometry.attributes.position.needsUpdate = true;
-
-                if (linesMesh) {
-                    scene.remove(linesMesh);
-                    linesMesh.geometry.dispose();
-                }
-
-                const linePositions = [];
-                const maxDist = 36;
-                for (let i = 0; i < nodeCount; i++) {
-                    for (let j = i + 1; j < nodeCount; j++) {
-                        const dx = pos[i * 3] - pos[j * 3];
-                        const dy = pos[i * 3 + 1] - pos[j * 3 + 1];
-                        const dz = pos[i * 3 + 2] - pos[j * 3 + 2];
-                        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                        if (dist < maxDist) {
-                            linePositions.push(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]);
-                            linePositions.push(pos[j * 3], pos[j * 3 + 1], pos[j * 3 + 2]);
-                        }
-                    }
-                }
-
-                const lineGeo = new THREE.BufferGeometry();
-                lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-                linesMesh = new THREE.LineSegments(lineGeo, lineMaterial);
-                scene.add(linesMesh);
-
-                camera.position.x += (mouseNormX * 12 - camera.position.x) * 0.05;
-                camera.position.y += (mouseNormY * 8 - camera.position.y) * 0.05;
-                camera.lookAt(scene.position);
+                // Smoothly lerp colors towards target palette
+                const target = palettes[targetPaletteIdx];
+                const factor = 0.045;
+                currentColors.a.lerp(target.a, factor);
+                currentColors.b.lerp(target.b, factor);
+                currentColors.c.lerp(target.c, factor);
+                currentColors.d.lerp(target.d, factor);
 
                 renderer.render(scene, camera);
             }
 
             animate();
+            startWeaverlyAutoCycle();
 
             window.addEventListener('resize', () => {
                 if (!parent || !renderer) return;
-                const newW = parent.clientWidth;
-                const newH = parent.clientHeight;
-                camera.aspect = newW / newH;
-                camera.updateProjectionMatrix();
+                const newW = parent.clientWidth || window.innerWidth;
+                const newH = parent.clientHeight || window.innerHeight;
                 renderer.setSize(newW, newH);
+                uniforms.u_resolution.value.set(newW, newH);
             });
         }
+
 
         // --- Portfolio Tech: 3D Tilt Cards & Magnetic Buttons ---
         function init3DTiltAndMagnetic() {
