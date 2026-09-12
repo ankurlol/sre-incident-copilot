@@ -131,7 +131,43 @@ class OTPService:
 
         last_error = None
 
-        # 1. Primary Cloud Dispatch: Resend HTTPS API (Port 443 - never blocked by Render)
+        # 1. Primary Cloud Dispatch: Brevo HTTPS API (Port 443 - sends to ANY recipient, no domain needed)
+        brevo_key = os.getenv("BREVO_API_KEY", "").strip().strip("'\"")
+        if brevo_key:
+            try:
+                import httpx
+                sender_email = os.getenv("BREVO_SENDER_EMAIL", "").strip() or os.getenv("SMTP_USER", "").strip() or "ankur21112004@gmail.com"
+                res = httpx.post(
+                    "https://api.brevo.com/v3/smtp/email",
+                    headers={
+                        "api-key": brevo_key,
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "sender": {"name": "SRE Incident Copilot", "email": sender_email},
+                        "to": [{"email": recipient}],
+                        "subject": f"[{subject_title}] Your Verification Code: {code}",
+                        "htmlContent": html_body,
+                        "textContent": text_body
+                    },
+                    timeout=10.0
+                )
+                if res.status_code in [200, 201]:
+                    logger.info(f"[AUTH OTP] Email dispatched successfully to {recipient} via Brevo HTTPS API")
+                    return True, None
+                else:
+                    err_msg = res.text
+                    try:
+                        err_msg = res.json().get("message", res.text)
+                    except Exception:
+                        pass
+                    logger.error(f"[AUTH OTP] Brevo API returned {res.status_code}: {err_msg}")
+                    last_error = f"Brevo delivery error: {err_msg}"
+            except Exception as brevo_err:
+                logger.error(f"[AUTH OTP] Brevo HTTP dispatch failed: {brevo_err}")
+                last_error = f"Brevo connection failed: {str(brevo_err)}"
+
+        # 2. Secondary Cloud Dispatch: Resend HTTPS API (Port 443)
         resend_key = os.getenv("RESEND_API_KEY", "").strip().strip("'\"")
         if resend_key:
             try:
@@ -166,42 +202,6 @@ class OTPService:
             except Exception as resend_err:
                 logger.error(f"[AUTH OTP] Resend HTTP dispatch failed: {resend_err}")
                 last_error = f"Resend connection failed: {str(resend_err)}"
-
-        # 2. Secondary Cloud Dispatch: Brevo HTTPS API (Port 443 - never blocked by Render)
-        brevo_key = os.getenv("BREVO_API_KEY", "").strip().strip("'\"")
-        if brevo_key:
-            try:
-                import httpx
-                sender_email = os.getenv("SMTP_USER", "").strip() or os.getenv("BREVO_SENDER_EMAIL", "notifications@sre-copilot.internal")
-                res = httpx.post(
-                    "https://api.brevo.com/v3/smtp/email",
-                    headers={
-                        "api-key": brevo_key,
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "sender": {"name": "SRE Incident Copilot", "email": sender_email},
-                        "to": [{"email": recipient}],
-                        "subject": f"[{subject_title}] Your Verification Code: {code}",
-                        "htmlContent": html_body,
-                        "textContent": text_body
-                    },
-                    timeout=10.0
-                )
-                if res.status_code in [200, 201]:
-                    logger.info(f"[AUTH OTP] Email dispatched successfully to {recipient} via Brevo HTTPS API")
-                    return True, None
-                else:
-                    err_msg = res.text
-                    try:
-                        err_msg = res.json().get("message", res.text)
-                    except Exception:
-                        pass
-                    logger.error(f"[AUTH OTP] Brevo API returned {res.status_code}: {err_msg}")
-                    last_error = f"Brevo delivery error: {err_msg}"
-            except Exception as brevo_err:
-                logger.error(f"[AUTH OTP] Brevo HTTP dispatch failed: {brevo_err}")
-                last_error = f"Brevo connection failed: {str(brevo_err)}"
 
         # 3. Direct SMTP (Fallback for local environments or hosts that do not block port 587)
         smtp_user = os.getenv("SMTP_USER", "").strip().strip("'\"")
