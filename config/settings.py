@@ -8,6 +8,11 @@ from typing import Optional
 load_dotenv()
 if os.path.exists("/etc/secrets/.env"):
     load_dotenv("/etc/secrets/.env", override=True)
+elif os.path.isdir("/etc/secrets"):
+    for fname in os.listdir("/etc/secrets"):
+        fpath = os.path.join("/etc/secrets", fname)
+        if os.path.isfile(fpath):
+            load_dotenv(fpath, override=True)
 
 class Settings(BaseSettings):
     # App config
