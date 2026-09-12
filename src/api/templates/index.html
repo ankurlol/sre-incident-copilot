@@ -193,49 +193,6 @@
             font-weight: 600;
             color: var(--text-main);
         }
-
-        /* Custom Cursor Follower (White-Themed) */
-        #cursor-dot {
-            width: 6px;
-            height: 6px;
-            background: #000000;
-            border-radius: 50%;
-            position: fixed;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            z-index: 999999;
-            transform: translate(-50%, -50%);
-            transition: opacity 0.2s, transform 0.05s;
-        }
-
-        #cursor-ring {
-            width: 32px;
-            height: 32px;
-            border: 1.5px solid rgba(0, 0, 0, 0.45);
-            border-radius: 50%;
-            position: fixed;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            z-index: 999998;
-            transform: translate(-50%, -50%);
-            transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                        height 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                        border-color 0.2s, background-color 0.2s;
-        }
-
-        body.cursor-hover #cursor-ring {
-            width: 52px;
-            height: 52px;
-            border-color: #000000;
-            background-color: rgba(0, 0, 0, 0.04);
-        }
-
-        @media (hover: none) and (pointer: coarse) {
-            #cursor-dot, #cursor-ring { display: none !important; }
-        }
-
         /* 3D Tilt Card */
         .tilt-card {
             transform-style: preserve-3d;
@@ -350,109 +307,6 @@
             color: var(--text-muted);
             margin-top: 6px;
         }
-
-        /* Interactive SRE Terminal Sandbox */
-        .terminal-box {
-            background: #090d16;
-            border: 1px solid #1e293b;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.12);
-            margin: 30px 0 80px 0;
-            font-family: var(--font-mono);
-            color: #e2e8f0;
-            text-align: left;
-        }
-
-        .terminal-header {
-            background: #141c2e;
-            padding: 10px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid #27354f;
-        }
-
-        .terminal-dots {
-            display: flex;
-            gap: 6px;
-        }
-
-        .terminal-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-        .dot-red { background: #ef4444; }
-        .dot-yellow { background: #f59e0b; }
-        .dot-green { background: #10b981; }
-
-        .terminal-title {
-            font-size: 11.5px;
-            color: #94a3b8;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-        }
-
-        .terminal-body {
-            padding: 20px;
-            font-size: 13px;
-            line-height: 1.6;
-            min-height: 200px;
-            max-height: 320px;
-            overflow-y: auto;
-        }
-
-        .terminal-chips {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            padding: 10px 20px;
-            background: #0f172a;
-            border-top: 1px solid #1e293b;
-            align-items: center;
-        }
-
-        .terminal-chip {
-            background: #1e293b;
-            color: #38bdf8 !important;
-            border: 1px solid #334155;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 11.5px;
-            cursor: pointer;
-            transition: all 0.15s;
-            font-family: var(--font-mono);
-        }
-
-        .terminal-chip:hover {
-            background: #0284c7 !important;
-            color: #ffffff !important;
-            border-color: #0284c7;
-        }
-
-        .terminal-input-line {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .terminal-prompt {
-            color: #10b981;
-            font-weight: 700;
-        }
-
-        .terminal-input {
-            background: transparent !important;
-            border: none !important;
-            outline: none !important;
-            color: #f8fafc !important;
-            font-family: inherit;
-            font-size: 13px;
-            flex: 1;
-            padding: 0 !important;
-        }
-
         .hero-title {
             font-size: 48px;
             font-weight: 800;
@@ -963,7 +817,6 @@
             <ul class="nav-links">
                 <li><a href="#services">Services</a></li>
                 <li><a href="#how-it-works">How It Works</a></li>
-                <li><a href="#interactive-sandbox">Sandbox</a></li>
                 <li><a href="#architecture">Architecture</a></li>
             </ul>
 
@@ -1133,43 +986,6 @@
                         <p class="step-desc">Dispatches your deployment workflow with target stable SHA, polls healthz, and notifies Slack or Discord channels.</p>
                     </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- Interactive SRE Telemetry & Diagnostics Sandbox -->
-        <section id="interactive-sandbox">
-            <div class="section-header" style="margin: 40px 0 24px;">
-                <div class="pill-badge" style="margin-bottom: 12px;">Interactive Sandbox</div>
-                <h2 class="section-title">Test Drive Autonomous SRE Telemetry</h2>
-                <p class="section-desc">Try running live diagnostic commands below to experience how SRE Copilot monitors, diagnoses, and safely recovers services in real-time.</p>
-            </div>
-            <div class="terminal-box">
-                <div class="terminal-header">
-                    <div class="terminal-dots">
-                        <span class="terminal-dot dot-red"></span>
-                        <span class="terminal-dot dot-yellow"></span>
-                        <span class="terminal-dot dot-green"></span>
-                    </div>
-                    <div class="terminal-title">sre-copilot-daemon :: zsh (interactive)</div>
-                    <div style="font-size: 11px; color: #64748b;">v1.4.2</div>
-                </div>
-                <div class="terminal-body" id="terminalOutput">
-                    <div><span style="color:#38bdf8;">[system]</span> SRE Incident Copilot Autonomous Engine v1.4.2 initialized.</div>
-                    <div><span style="color:#38bdf8;">[system]</span> Cluster connected: prod-us-east-k8s (4 nodes, 32 pods). Type <span style="color:#f59e0b;">'help'</span> or click quick actions below.</div>
-                    <div style="color: #64748b; margin-top: 4px;">-----------------------------------------------------------------------------------</div>
-                </div>
-                <div class="terminal-chips">
-                    <span style="font-size: 11px; color: #94a3b8; font-weight: 600; margin-right: 6px;">QUICK COMMANDS:</span>
-                    <button type="button" class="terminal-chip" onclick="runTerminalCmd('sre status')">sre status</button>
-                    <button type="button" class="terminal-chip" onclick="runTerminalCmd('sre scan')">sre scan</button>
-                    <button type="button" class="terminal-chip" onclick="runTerminalCmd('sre rca --last')">sre rca --last</button>
-                    <button type="button" class="terminal-chip" onclick="runTerminalCmd('sre heal --dry-run')">sre heal --dry-run</button>
-                    <button type="button" class="terminal-chip" onclick="runTerminalCmd('clear')">clear</button>
-                </div>
-                <form onsubmit="handleTerminalSubmit(event)" style="display:flex; padding: 12px 20px; background: #0b1120; border-top: 1px solid #1e293b;">
-                    <span class="terminal-prompt" style="margin-right: 10px;">sre@copilot:~$</span>
-                    <input type="text" id="terminalInput" class="terminal-input" placeholder="Type a command (status, scan, rca, heal, help)..." autocomplete="off" spellcheck="false">
-                </form>
             </div>
         </section>
 
@@ -2118,65 +1934,6 @@
                 console.warn('Lenis scroll init:', e);
             }
         }
-
-        // --- Portfolio Tech: Custom Dual-Ring Cursor Follower ---
-        function initCustomCursor() {
-            const dot = document.getElementById('cursor-dot');
-            const ring = document.getElementById('cursor-ring');
-            if (!dot || !ring) return;
-
-            if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
-                dot.style.display = 'none';
-                ring.style.display = 'none';
-                return;
-            }
-
-            let mouseX = window.innerWidth / 2;
-            let mouseY = window.innerHeight / 2;
-            let ringX = mouseX;
-            let ringY = mouseY;
-            let isVisible = false;
-
-            window.addEventListener('mousemove', (e) => {
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-                if (!isVisible) {
-                    dot.style.opacity = '1';
-                    ring.style.opacity = '1';
-                    isVisible = true;
-                }
-                dot.style.left = mouseX + 'px';
-                dot.style.top = mouseY + 'px';
-            });
-
-            function renderCursor() {
-                ringX += (mouseX - ringX) * 0.18;
-                ringY += (mouseY - ringY) * 0.18;
-                ring.style.left = ringX + 'px';
-                ring.style.top = ringY + 'px';
-                requestAnimationFrame(renderCursor);
-            }
-            requestAnimationFrame(renderCursor);
-
-            const interactiveSel = 'a, button, input, select, textarea, .tilt-card, .terminal-chip';
-            document.addEventListener('mouseover', (e) => {
-                if (e.target && e.target.closest && e.target.closest(interactiveSel)) {
-                    document.body.classList.add('cursor-hover');
-                }
-            });
-            document.addEventListener('mouseout', (e) => {
-                if (e.target && e.target.closest && e.target.closest(interactiveSel)) {
-                    document.body.classList.remove('cursor-hover');
-                }
-            });
-
-            document.addEventListener('mouseleave', () => {
-                dot.style.opacity = '0';
-                ring.style.opacity = '0';
-                isVisible = false;
-            });
-        }
-
         // --- Portfolio Tech: Three.js 3D Microservice Mesh (Hero Background) ---
         function initHeroThreeJS() {
             const canvas = document.getElementById('hero-webgl-canvas');
@@ -2376,100 +2133,9 @@
 
             statElements.forEach(el => observer.observe(el));
         }
-
-        // --- Portfolio Tech: Interactive Diagnostic Terminal Sandbox ---
-        function runTerminalCmd(cmd) {
-            const input = document.getElementById('terminalInput');
-            if (input) input.value = cmd;
-            executeTerminal(cmd);
-        }
-
-        function handleTerminalSubmit(e) {
-            if (e && e.preventDefault) e.preventDefault();
-            const input = document.getElementById('terminalInput');
-            if (!input) return;
-            const cmd = input.value.trim();
-            if (!cmd) return;
-            input.value = '';
-            executeTerminal(cmd);
-        }
-
-        function executeTerminal(cmd) {
-            const out = document.getElementById('terminalOutput');
-            if (!out) return;
-
-            const clean = cmd.trim().toLowerCase();
-
-            const userLine = document.createElement('div');
-            userLine.style.marginTop = '6px';
-            userLine.innerHTML = `<span style="color:#10b981;">sre@copilot:~$</span> <span style="color:#f8fafc; font-weight:600;">${escapeHtml(cmd)}</span>`;
-            out.appendChild(userLine);
-
-            const resLine = document.createElement('div');
-            resLine.style.marginBottom = '8px';
-
-            if (clean === 'clear') {
-                out.innerHTML = `<div><span style="color:#38bdf8;">[system]</span> Terminal cleared. Type <span style="color:#f59e0b;">'help'</span> for available commands.</div>`;
-                return;
-            } else if (clean === 'help') {
-                resLine.innerHTML = `
-<div style="color: #94a3b8; line-height: 1.6;">
-  <div style="color: #38bdf8; font-weight: 600; margin-bottom: 2px;">AVAILABLE COMMANDS:</div>
-  <div>&bull; <strong style="color: #f8fafc;">sre status</strong> &mdash; Health overview of clusters, proxies, and RAG index</div>
-  <div>&bull; <strong style="color: #f8fafc;">sre scan</strong> &mdash; Automated drift and regression scan across services</div>
-  <div>&bull; <strong style="color: #f8fafc;">sre rca [--last]</strong> &mdash; Run hybrid BM25 + Vector RCA against recent incident log</div>
-  <div>&bull; <strong style="color: #f8fafc;">sre heal [--dry-run]</strong> &mdash; Simulate safety-checked GitOps automated rollback</div>
-  <div>&bull; <strong style="color: #f8fafc;">clear</strong> &mdash; Reset terminal buffer</div>
-</div>`;
-            } else if (clean === 'sre status') {
-                resLine.innerHTML = `
-<div style="color: #94a3b8; line-height: 1.5;">
-  <span style="color: #10b981;">●</span> [CLUSTER]: <span style="color: #f8fafc;">prod-us-east-1</span> (Healthy, 4 Nodes, 32 Pods)<br>
-  <span style="color: #10b981;">●</span> [INGRESS]: <span style="color: #f8fafc;">Envoy Proxy (p99 latency 14ms)</span><br>
-  <span style="color: #10b981;">●</span> [HYBRID RAG]: <span style="color: #f8fafc;">Dense Vectors: 142 | BM25 Index: Synced</span><br>
-  <span style="color: #10b981;">●</span> [GUARDRAILS]: <span style="color: #f8fafc;">Migration Inspector Active (Alembic/Prisma detected)</span><br>
-  <span style="color: #38bdf8;">&rarr; Availability: 99.992% | Zero active unhandled exceptions. System nominal.</span>
-</div>`;
-            } else if (clean === 'sre scan') {
-                resLine.innerHTML = `
-<div style="color: #94a3b8; line-height: 1.5;">
-  <span style="color: #38bdf8;">[SCAN]</span> Scanning 6 monitored repositories...<br>
-  [1/6] auth-service (commit: <code style="color: #f59e0b;">b7e19a4</code>) &mdash; <span style="color: #10b981;">CLEAN</span><br>
-  [2/6] payment-gateway (commit: <code style="color: #f59e0b;">84df012</code>) &mdash; <span style="color: #10b981;">CLEAN</span><br>
-  [3/6] inventory-api (commit: <code style="color: #f59e0b;">c1a089d</code>) &mdash; <span style="color: #10b981;">CLEAN</span><br>
-  <span style="color: #10b981;">✓ Scan complete: 0 unhandled regressions detected. Auto-remediation pipeline standing by.</span>
-</div>`;
-            } else if (clean.startsWith('sre rca')) {
-                resLine.innerHTML = `
-<div style="color: #94a3b8; line-height: 1.5;">
-  <span style="color: #38bdf8;">[RAG-RCA]</span> Parsing telemetry for last recorded crash incident...<br>
-  <span style="color: #ef4444;">[ALERT]</span> NullPointerDereference in CheckoutService.processOrder() (HTTP 500)<br>
-  <span style="color: #f59e0b;">[DIFF]</span> Commit: <code style="color: #f8fafc;">e83b401</code> &mdash; modified <code>payment_client.py</code> (+14, -2)<br>
-  <span style="color: #38bdf8;">[BM25+VECTOR]</span> Matched SOP: <em>"Runbook-04: Upstream API Missing Auth Token"</em> (Score: 0.942)<br>
-  <span style="color: #10b981;">[RECOMMENDATION]</span> Safe rollback to commit <code style="color: #f8fafc;">9bf1a42</code>. Schema migrations absent.
-</div>`;
-            } else if (clean.startsWith('sre heal')) {
-                resLine.innerHTML = `
-<div style="color: #94a3b8; line-height: 1.5;">
-  <span style="color: #38bdf8;">[HEAL-DISPATCH]</span> Triggering autonomous resolution simulation...<br>
-  1. Evaluating Guardrails: No Alembic migrations found in delta &rarr; <span style="color: #10b981;">SAFE TO ROLLBACK</span><br>
-  2. Anti-flapper filter: 1 incident in last 30m &rarr; <span style="color: #10b981;">PASSED</span><br>
-  3. GitHub Actions dispatch payload: <code>{ ref: '9bf1a42', environment: 'production' }</code><br>
-  4. Synthetic Health Verification: Polling <code>/healthz</code> &rarr; HTTP 200 OK (latency: 18ms)<br>
-  <span style="color: #10b981;">✓ Autonomous Recovery Complete in 34.2s (Zero Human Intervention).</span>
-</div>`;
-            } else {
-                resLine.innerHTML = `<span style="color:#ef4444;">Command not recognized: '${escapeHtml(cmd)}'.</span> Type <span style="color:#f59e0b;">'help'</span> for available commands.`;
-            }
-
-            out.appendChild(resLine);
-            out.scrollTop = out.scrollHeight;
-        }
-
         // Auto-open Auth Modal if open_auth=true or open_signup=true in URL & Initialize Animations
         window.addEventListener('DOMContentLoaded', () => {
             initLenis();
-            initCustomCursor();
             initHeroThreeJS();
             init3DTiltAndMagnetic();
             initRollingStats();
@@ -2482,9 +2148,5 @@
             }
         });
     </script>
-
-    <!-- White-Themed Dual-Ring Cursor Follower -->
-    <div id="cursor-dot"></div>
-    <div id="cursor-ring"></div>
 </body>
 </html>
