@@ -48,8 +48,8 @@ class OTPService:
 
         logger.info(f"[AUTH OTP] Generated verification code for {email} (purpose: {purpose})")
 
-        # Attempt to send via SMTP if configured
-        sent_via_smtp = cls._send_smtp_email(email, code, purpose)
+        # Attempt to send via SMTP/HTTPS if configured
+        sent_via_smtp, err_detail = cls._send_smtp_email(email, code, purpose)
 
         if sent_via_smtp:
             msg = "Verification code has been dispatched to your email address."
@@ -58,7 +58,7 @@ class OTPService:
             if expose_dev:
                 msg = f"Verification code generated (Code: {code}). Configure SMTP in .env for inbox delivery."
             else:
-                msg = "Verification code generated. If email delivery is not configured, please check server logs."
+                msg = err_detail or "Unable to dispatch verification email. Please check server configuration."
 
         return code, sent_via_smtp, msg
 
@@ -100,9 +100,10 @@ class OTPService:
         return True, "Verification successful."
 
     @classmethod
-    def _send_smtp_email(cls, recipient: str, code: str, purpose: str) -> bool:
+    def _send_smtp_email(cls, recipient: str, code: str, purpose: str) -> Tuple[bool, Optional[str]]:
         """
         Sends an HTML email with the 6-digit OTP code using Resend/Brevo HTTPS API or SMTP.
+        Returns: (success: bool, error_detail: Optional[str])
         """
         # Always reload /etc/secrets if present on Render
         if os.path.isdir("/etc/secrets"):
@@ -128,6 +129,8 @@ class OTPService:
         </div>
         """
 
+        last_error = None
+
         # 1. Primary Cloud Dispatch: Resend HTTPS API (Port 443 - never blocked by Render)
         resend_key = os.getenv("RESEND_API_KEY", "").strip().strip("'\"")
         if resend_key:
@@ -151,11 +154,18 @@ class OTPService:
                 )
                 if res.status_code in [200, 201]:
                     logger.info(f"[AUTH OTP] Email dispatched successfully to {recipient} via Resend HTTPS API")
-                    return True
+                    return True, None
                 else:
-                    logger.error(f"[AUTH OTP] Resend API returned {res.status_code}: {res.text}")
+                    err_msg = res.text
+                    try:
+                        err_msg = res.json().get("message", res.text)
+                    except Exception:
+                        pass
+                    logger.error(f"[AUTH OTP] Resend API returned {res.status_code}: {err_msg}")
+                    last_error = f"Resend delivery error: {err_msg}"
             except Exception as resend_err:
                 logger.error(f"[AUTH OTP] Resend HTTP dispatch failed: {resend_err}")
+                last_error = f"Resend connection failed: {str(resend_err)}"
 
         # 2. Secondary Cloud Dispatch: Brevo HTTPS API (Port 443 - never blocked by Render)
         brevo_key = os.getenv("BREVO_API_KEY", "").strip().strip("'\"")
@@ -180,11 +190,18 @@ class OTPService:
                 )
                 if res.status_code in [200, 201]:
                     logger.info(f"[AUTH OTP] Email dispatched successfully to {recipient} via Brevo HTTPS API")
-                    return True
+                    return True, None
                 else:
-                    logger.error(f"[AUTH OTP] Brevo API returned {res.status_code}: {res.text}")
+                    err_msg = res.text
+                    try:
+                        err_msg = res.json().get("message", res.text)
+                    except Exception:
+                        pass
+                    logger.error(f"[AUTH OTP] Brevo API returned {res.status_code}: {err_msg}")
+                    last_error = f"Brevo delivery error: {err_msg}"
             except Exception as brevo_err:
                 logger.error(f"[AUTH OTP] Brevo HTTP dispatch failed: {brevo_err}")
+                last_error = f"Brevo connection failed: {str(brevo_err)}"
 
         # 3. Direct SMTP (Fallback for local environments or hosts that do not block port 587)
         smtp_user = os.getenv("SMTP_USER", "").strip().strip("'\"")
@@ -196,8 +213,7 @@ class OTPService:
             smtp_port = 587
 
         if not smtp_user or not smtp_pass:
-            logger.info(f"[AUTH OTP] Neither Resend nor SMTP is fully configured. Generated verification code for {recipient}: {code}")
-            return False
+            return False, last_error or "Email delivery failed. Resend sandbox is restricted to your registered account email."
 
         try:
             msg = MIMEMultipart("alternative")
@@ -225,7 +241,7 @@ class OTPService:
                         server.sendmail(smtp_user, [recipient], msg.as_string())
 
             logger.info(f"[AUTH OTP] Real email dispatched successfully to {recipient} via {smtp_host}")
-            return True
+            return True, None
         except Exception as e:
             logger.error(f"[AUTH OTP] Direct SMTP failed: {e}")
-            return False
+            return False, last_error or f"SMTP connection failed: {str(e)}"

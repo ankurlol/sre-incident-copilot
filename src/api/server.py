@@ -435,6 +435,9 @@ async def send_otp(payload: OTPSendPayload):
 
     expose_dev = os.getenv("EXPOSE_DEV_OTP", "false").lower() in ["true", "1", "yes"]
 
+    if not sent_smtp and not expose_dev:
+        return JSONResponse(status_code=400, content={"error": message})
+
     return {
         "status": "success",
         "message": message,
