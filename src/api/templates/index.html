@@ -227,27 +227,30 @@
             justify-content: space-between;
             overflow: hidden;
             padding: 32px 56px 28px 56px;
-            background: #080612;
+            background: transparent;
             color: #ffffff;
             box-sizing: border-box;
+            z-index: 2;
         }
 
         #hero-fluid-canvas {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             pointer-events: none;
-            z-index: 1;
+            z-index: 0;
         }
 
-        .weaverly-vignette {
-            position: absolute;
+        .global-fluid-vignette {
+            position: fixed;
             inset: 0;
-            background: radial-gradient(circle at 75% 50%, rgba(8, 6, 18, 0.1) 0%, rgba(8, 6, 18, 0.45) 80%, rgba(8, 6, 18, 0.75) 100%);
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at 65% 35%, rgba(8, 6, 18, 0.15) 0%, rgba(8, 6, 18, 0.52) 60%, rgba(8, 6, 18, 0.86) 100%);
             pointer-events: none;
-            z-index: 2;
+            z-index: 1;
         }
 
         .weaverly-top-row {
@@ -770,27 +773,26 @@
             gap: 1px;
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.12);
-            border-top: 1px solid rgba(255, 255, 255, 0.25);
+            border-top: 1px solid rgba(255, 255, 255, 0.28);
             border-radius: 22px;
             overflow: hidden;
             margin: 60px 0 90px 0;
             text-align: center;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
             box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.15);
             position: relative;
             z-index: 2;
             transform: translateZ(0);
         }
 
-
         .stats-item {
-            background: rgba(14, 11, 24, 0.55);
+            background: rgba(14, 11, 24, 0.38);
             padding: 38px 24px;
             transition: background 0.25s ease;
         }
         .stats-item:hover {
-            background: rgba(25, 18, 42, 0.65);
+            background: rgba(255, 255, 255, 0.06);
         }
 
         @media (max-width: 800px) {
@@ -821,11 +823,11 @@
 
         /* Workflow Box: Mission Control Glass Pipeline */
         .workflow-box {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.012) 100%);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.012) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-top: 1px solid rgba(255, 255, 255, 0.24);
+            border-top: 1px solid rgba(255, 255, 255, 0.26);
             border-radius: 24px;
             padding: 48px 42px;
             margin-bottom: 90px;
@@ -835,7 +837,6 @@
             z-index: 2;
             transform: translateZ(0);
         }
-
 
         .workflow-box::before {
             content: '';
@@ -862,17 +863,21 @@
         }
 
         .step-card {
-            background: rgba(255, 255, 255, 0.035);
+            background: rgba(255, 255, 255, 0.04);
             backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 16px;
             padding: 24px 20px;
             transition: all 0.25s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.1);
         }
         .step-card:hover {
             transform: translateY(-4px);
-            border-color: rgba(167, 139, 250, 0.4);
-            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(167, 139, 250, 0.45);
+            background: rgba(255, 255, 255, 0.07);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.18);
         }
 
         .step-number {
@@ -910,18 +915,18 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.035);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.09);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.22);
             border-radius: 20px;
             padding: 30px 24px;
             margin-bottom: 90px;
             overflow-x: auto;
             position: relative;
             z-index: 2;
-            box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.12);
         }
 
         .arch-node {
@@ -929,11 +934,14 @@
             min-width: 150px;
             text-align: center;
             padding: 20px 14px;
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 14px;
             transition: all 0.25s ease;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
         }
 
         .arch-node:hover {
@@ -1010,6 +1018,104 @@
             margin: 0 auto 36px;
             line-height: 1.7;
             position: relative;
+        }
+
+        /* Glassmorphic Landing Footer */
+        .landing-glass-footer {
+            background: rgba(12, 9, 20, 0.52);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 48px 44px 32px;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.14);
+        }
+
+        .footer-glass-inner {
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-bottom: 36px;
+        }
+
+        .footer-col-brand {
+            flex: 1;
+            min-width: 260px;
+        }
+
+        .footer-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(52, 211, 153, 0.1);
+            border: 1px solid rgba(52, 211, 153, 0.28);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6ee7b7;
+            margin-top: 18px;
+            backdrop-filter: blur(8px);
+        }
+
+        .status-indicator-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #34d399;
+            box-shadow: 0 0 10px #34d399;
+            animation: pulseDot 2s infinite;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.6; }
+        }
+
+        .footer-links-grid {
+            display: flex;
+            gap: 44px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links-group h5 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #c4b5fd;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .footer-links-group a {
+            display: block;
+            font-size: 13.5px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            margin-bottom: 10px;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .footer-links-group a:hover {
+            color: #ffffff;
+            transform: translateX(3px);
+        }
+
+        .footer-bottom-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 22px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
 
@@ -1655,10 +1761,12 @@
     <!-- ----------------------------------------------------------------- -->
     {% if not is_authenticated %}
 
+    <!-- Fixed Interactive Chromatic Fluid Canvas for Entire Page Background -->
+    <canvas id="hero-fluid-canvas"></canvas>
+    <div class="global-fluid-vignette"></div>
+
     <!-- Full-viewport Weaverly Interactive Fluid Hero -->
     <section class="weaverly-hero">
-        <canvas id="hero-fluid-canvas"></canvas>
-        <div class="weaverly-vignette"></div>
 
         <!-- Top Navigation Row: Brand + Tagline (Left) & Auth Buttons (Right) -->
         <div class="weaverly-top-row">
@@ -1977,6 +2085,54 @@
                     Get Started Free &rarr;
                 </button>
             </section>
+
+            <!-- Sleek Glassmorphic Landing Page Footer -->
+            <footer class="landing-glass-footer">
+                <div class="footer-glass-inner">
+                    <div class="footer-col-brand">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                            <div class="brand-icon" style="width: 32px; height: 32px; font-size: 15px;">S</div>
+                            <span style="font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em;">SRE Copilot</span>
+                        </div>
+                        <p style="font-size: 13.5px; color: rgba(255, 255, 255, 0.68); line-height: 1.65; max-width: 340px;">
+                            Autonomous incident remediation platform enabling zero-touch RCA, safe schema guardrails, and instant GitOps rollbacks.
+                        </p>
+                        <div class="footer-status-pill">
+                            <span class="status-indicator-dot"></span>
+                            <span>All Systems Operational (99.99% SLA)</span>
+                        </div>
+                    </div>
+                    <div class="footer-links-grid">
+                        <div class="footer-links-group">
+                            <h5>Capabilities</h5>
+                            <a href="#services">Hybrid RAG RCA</a>
+                            <a href="#services">Schema Guardrails</a>
+                            <a href="#services">GitOps Rollbacks</a>
+                            <a href="#services">Telemetry Ingestion</a>
+                        </div>
+                        <div class="footer-links-group">
+                            <h5>Architecture</h5>
+                            <a href="#how-it-works">Incident Flow</a>
+                            <a href="#architecture">Pipeline Nodes</a>
+                            <a href="/docs">FastAPI OpenAPI</a>
+                            <a href="/healthz">Healthz Endpoint</a>
+                        </div>
+                        <div class="footer-links-group">
+                            <h5>Access</h5>
+                            <a href="javascript:void(0)" onclick="openAuthModal('signin')">Sign In</a>
+                            <a href="javascript:void(0)" onclick="openAuthModal('signup')">Create Account</a>
+                            <a href="https://github.com/ankurlol/sre-incident-copilot" target="_blank">GitHub Repo ↗</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom-row">
+                    <div>&copy; 2026 SRE Incident Copilot. Built for mission-critical production uptime.</div>
+                    <div style="display: flex; gap: 20px;">
+                        <a href="javascript:void(0)" style="color: rgba(255,255,255,0.5); text-decoration: none;">Security &amp; Privacy</a>
+                        <a href="javascript:void(0)" style="color: rgba(255,255,255,0.5); text-decoration: none;">Terms of Service</a>
+                    </div>
+                </div>
+            </footer>
         </main>
     </div>
 
@@ -3027,11 +3183,8 @@
             const canvas = document.getElementById('hero-fluid-canvas');
             if (!canvas || typeof THREE === 'undefined') return;
 
-            const parent = canvas.parentElement;
-            if (!parent) return;
-
-            const width = parent.clientWidth || window.innerWidth;
-            const height = parent.clientHeight || window.innerHeight;
+            const width = window.innerWidth;
+            const height = window.innerHeight;
 
             const scene = new THREE.Scene();
             const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -3217,26 +3370,12 @@
                 targetPaletteIdx = idx % palettes.length;
             };
 
-            // Occlusion culling: pause WebGL render loop when hero is off-screen
-            let isHeroInView = true;
-            if ('IntersectionObserver' in window) {
-                const heroObserver = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        isHeroInView = entry.isIntersecting;
-                    });
-                }, { threshold: 0.0 });
-                heroObserver.observe(parent);
-            }
-
             function animate() {
                 requestAnimationFrame(animate);
 
-                // If scrolled away from hero, skip render to save 100% GPU
-                if (!isHeroInView) return;
-
                 uniforms.u_time.value = clock.getElapsedTime();
 
-                // Smooth mouse interpolation
+                // Smooth mouse interpolation across whole page
                 uniforms.u_mouse.value.x += (targetMouseX - uniforms.u_mouse.value.x) * 0.06;
                 uniforms.u_mouse.value.y += (targetMouseY - uniforms.u_mouse.value.y) * 0.06;
 
@@ -3256,14 +3395,14 @@
 
             let resizeTimeout;
             window.addEventListener('resize', () => {
-                if (!parent || !renderer) return;
+                if (!renderer) return;
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
-                    const newW = parent.clientWidth || window.innerWidth;
-                    const newH = parent.clientHeight || window.innerHeight;
+                    const newW = window.innerWidth;
+                    const newH = window.innerHeight;
                     renderer.setSize(newW, newH);
                     uniforms.u_resolution.value.set(newW, newH);
-                }, 100);
+                }, 80);
             }, { passive: true });
         }
 
