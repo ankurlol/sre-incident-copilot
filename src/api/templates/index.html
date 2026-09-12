@@ -496,43 +496,43 @@
             position: absolute;
             border-radius: 50%;
             pointer-events: none;
-            filter: blur(90px);
-            opacity: 0.45;
+            opacity: 0.6;
             z-index: 0;
-            will-change: transform;
+            transform: translateZ(0);
         }
 
         .orb-violet {
-            top: 5%;
-            left: -10%;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(124, 77, 255, 0.4) 0%, rgba(74, 20, 140, 0.15) 50%, transparent 70%);
+            top: 2%;
+            left: -8%;
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(124, 77, 255, 0.32) 0%, rgba(74, 20, 140, 0.12) 40%, transparent 70%);
         }
 
         .orb-cyan {
-            top: 30%;
-            right: -10%;
-            width: 550px;
-            height: 550px;
-            background: radial-gradient(circle, rgba(0, 229, 255, 0.3) 0%, rgba(0, 150, 255, 0.1) 50%, transparent 70%);
+            top: 28%;
+            right: -8%;
+            width: 650px;
+            height: 650px;
+            background: radial-gradient(circle, rgba(0, 229, 255, 0.22) 0%, rgba(0, 150, 255, 0.08) 40%, transparent 70%);
         }
 
         .orb-emerald {
-            top: 60%;
-            left: 15%;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(0, 200, 83, 0.28) 0%, transparent 65%);
+            top: 55%;
+            left: 10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 200, 83, 0.2) 0%, rgba(0, 200, 83, 0.06) 40%, transparent 70%);
         }
 
         .orb-coral {
-            bottom: 5%;
+            bottom: 2%;
             right: 5%;
-            width: 650px;
-            height: 650px;
-            background: radial-gradient(circle, rgba(244, 63, 94, 0.25) 0%, rgba(225, 29, 72, 0.08) 50%, transparent 70%);
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(244, 63, 94, 0.2) 0%, rgba(225, 29, 72, 0.06) 40%, transparent 70%);
         }
+
 
         /* Live Marquee Ticker: Frosted Glass */
         .ticker-wrap {
@@ -638,18 +638,20 @@
         }
 
         .service-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.015) 100%);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.015) 100%);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.09);
             border-top: 1px solid rgba(255, 255, 255, 0.22);
             border-radius: 20px;
             padding: 32px 28px;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 20px 45px -12px rgba(0, 0, 0, 0.6), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+            box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.6), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+            transform: translateZ(0);
         }
+
 
         .service-card::before {
             content: '';
@@ -773,12 +775,14 @@
             overflow: hidden;
             margin: 60px 0 90px 0;
             text-align: center;
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            box-shadow: 0 24px 50px -15px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.15);
             position: relative;
             z-index: 2;
+            transform: translateZ(0);
         }
+
 
         .stats-item {
             background: rgba(14, 11, 24, 0.55);
@@ -818,8 +822,8 @@
         /* Workflow Box: Mission Control Glass Pipeline */
         .workflow-box {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.012) 100%);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-top: 1px solid rgba(255, 255, 255, 0.24);
             border-radius: 24px;
@@ -827,9 +831,11 @@
             margin-bottom: 90px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.14);
+            box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.14);
             z-index: 2;
+            transform: translateZ(0);
         }
+
 
         .workflow-box::before {
             content: '';
@@ -2917,16 +2923,16 @@
             });
         }
 
-        // --- Portfolio Tech: Lenis Smooth Scrolling ---
+        // --- Portfolio Tech: Responsive Smooth Scrolling ---
         function initLenis() {
             if (typeof Lenis === 'undefined') return;
             try {
                 const lenis = new Lenis({
-                    duration: 1.1,
-                    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                    duration: 0.75,
+                    easing: (t) => 1 - Math.pow(1 - t, 3),
                     smoothWheel: true,
-                    wheelMultiplier: 1.0,
-                    touchMultiplier: 1.5
+                    wheelMultiplier: 1.1,
+                    touchMultiplier: 1.2
                 });
 
                 function raf(time) {
@@ -2938,6 +2944,7 @@
                 console.warn('Lenis scroll init:', e);
             }
         }
+
         // --- Weaverly Fluid Chromatic Shader Engine & Interactive Service Controller ---
         const heroServicesData = [
             {
@@ -3031,9 +3038,15 @@
 
             let renderer;
             try {
-                renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: false, antialias: true });
+                renderer = new THREE.WebGLRenderer({
+                    canvas: canvas,
+                    alpha: false,
+                    antialias: false, // Turn off MSAA for full-screen quad (significant fill-rate speedup)
+                    powerPreference: 'high-performance'
+                });
                 renderer.setSize(width, height);
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                // Cap pixel ratio to 1.0 to avoid 4K/retina render choking
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.0));
             } catch (e) {
                 console.warn('WebGL init error:', e);
                 return;
@@ -3047,8 +3060,9 @@
                 }
             `;
 
-            // Organic Chromatic Fluid Shader with Domain Warping
+            // Streamlined High-Performance Chromatic Fluid Shader
             const fragmentShader = `
+                precision mediump float;
                 uniform float u_time;
                 uniform vec2 u_resolution;
                 uniform vec2 u_mouse;
@@ -3072,8 +3086,8 @@
                     vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
                         + i.x + vec3(0.0, i1.x, 1.0 ));
                     vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
-                    m = m*m ;
-                    m = m*m ;
+                    m = m*m;
+                    m = m*m;
                     vec3 x = 2.0 * fract(p * C.www) - 1.0;
                     vec3 h = abs(x) - 0.5;
                     vec3 ox = floor(x + 0.5);
@@ -3085,15 +3099,9 @@
                     return 130.0 * dot(m, g);
                 }
 
-                float fbm(vec2 p) {
-                    float total = 0.0;
-                    float amp = 0.55;
-                    for (int i = 0; i < 4; i++) {
-                        total += snoise(p) * amp;
-                        p = p * 2.15 + vec2(12.3, 45.6);
-                        amp *= 0.5;
-                    }
-                    return total;
+                // 2-octave lightweight fbm for fluid speed
+                float fbm2(vec2 p) {
+                    return snoise(p) * 0.65 + snoise(p * 2.15 + vec2(12.3, 45.6)) * 0.35;
                 }
 
                 void main() {
@@ -3103,29 +3111,25 @@
 
                     vec2 m = (u_mouse - 0.5) * vec2(aspect, 1.0);
                     float dM = length(p - m);
-                    float mouseEffect = smoothstep(0.5, 0.0, dM) * 0.18;
+                    float mouseEffect = smoothstep(0.45, 0.0, dM) * 0.14;
 
                     float t = u_time * 0.16;
 
-                    // Dual domain warping
-                    float qx = fbm(p * 1.35 + vec2(t * 0.28, t * 0.2) + mouseEffect);
-                    float qy = fbm(p * 1.35 + vec2(-t * 0.22, t * 0.3));
+                    // Lightweight domain warping
+                    float qx = fbm2(p * 1.35 + vec2(t * 0.28, t * 0.2) + mouseEffect);
+                    float qy = fbm2(p * 1.35 + vec2(-t * 0.22, t * 0.3));
                     vec2 q = vec2(qx, qy);
 
-                    float rx = fbm(p * 1.6 + q * 1.3 + vec2(t * 0.15, -t * 0.18));
-                    float ry = fbm(p * 1.6 + q * 1.3 + vec2(-t * 0.14, t * 0.19));
-                    vec2 r = vec2(rx, ry);
+                    float f = fbm2(p * 1.45 + q * 1.35);
 
-                    float f = fbm(p * 1.45 + r * 1.45);
-
-                    // Blend 4 vibrant chromatic layers
-                    vec3 col = mix(u_colorA, u_colorB, clamp((f * f) * 3.8, 0.0, 1.0));
-                    col = mix(col, u_colorC, clamp(length(q) * 1.1, 0.0, 1.0));
-                    col = mix(col, u_colorD, clamp(length(r.x) * 1.1, 0.0, 1.0));
+                    // Blend vibrant chromatic layers
+                    vec3 col = mix(u_colorA, u_colorB, clamp((f * f) * 3.6, 0.0, 1.0));
+                    col = mix(col, u_colorC, clamp(length(q) * 1.05, 0.0, 1.0));
+                    col = mix(col, u_colorD, clamp(abs(q.x) * 1.1, 0.0, 1.0));
 
                     // Ambient vignette
-                    float vignette = 1.0 - smoothstep(0.3, 1.5, length(uv - 0.5));
-                    col *= (0.7 + 0.3 * vignette);
+                    float vignette = 1.0 - smoothstep(0.35, 1.4, length(uv - 0.5));
+                    col *= (0.72 + 0.28 * vignette);
 
                     gl_FragColor = vec4(col, 1.0);
                 }
@@ -3192,18 +3196,37 @@
 
             const clock = new THREE.Clock();
 
+            // Throttled mouse tracking
+            let targetMouseX = 0.5, targetMouseY = 0.5;
             window.addEventListener('mousemove', (e) => {
-                uniforms.u_mouse.value.x = e.clientX / window.innerWidth;
-                uniforms.u_mouse.value.y = 1.0 - (e.clientY / window.innerHeight);
-            });
+                targetMouseX = e.clientX / window.innerWidth;
+                targetMouseY = 1.0 - (e.clientY / window.innerHeight);
+            }, { passive: true });
 
             window.setHeroPalette = function(idx) {
                 targetPaletteIdx = idx % palettes.length;
             };
 
+            // Occlusion culling: pause WebGL render loop when hero is off-screen
+            let isHeroInView = true;
+            if ('IntersectionObserver' in window) {
+                const heroObserver = new IntersectionObserver((entries) => {
+                    isHeroInView = entries[0].isIntersecting;
+                }, { threshold: 0.05 });
+                heroObserver.observe(parent);
+            }
+
             function animate() {
                 requestAnimationFrame(animate);
+
+                // If scrolled away from hero, skip render to save 100% GPU
+                if (!isHeroInView) return;
+
                 uniforms.u_time.value = clock.getElapsedTime();
+
+                // Smooth mouse interpolation
+                uniforms.u_mouse.value.x += (targetMouseX - uniforms.u_mouse.value.x) * 0.06;
+                uniforms.u_mouse.value.y += (targetMouseY - uniforms.u_mouse.value.y) * 0.06;
 
                 // Smoothly lerp colors towards target palette
                 const target = palettes[targetPaletteIdx];
@@ -3219,36 +3242,53 @@
             animate();
             startWeaverlyAutoCycle();
 
+            let resizeTimeout;
             window.addEventListener('resize', () => {
                 if (!parent || !renderer) return;
-                const newW = parent.clientWidth || window.innerWidth;
-                const newH = parent.clientHeight || window.innerHeight;
-                renderer.setSize(newW, newH);
-                uniforms.u_resolution.value.set(newW, newH);
-            });
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    const newW = parent.clientWidth || window.innerWidth;
+                    const newH = parent.clientHeight || window.innerHeight;
+                    renderer.setSize(newW, newH);
+                    uniforms.u_resolution.value.set(newW, newH);
+                }, 100);
+            }, { passive: true });
         }
 
-
-        // --- Portfolio Tech: 3D Tilt Cards & Magnetic Buttons ---
+        // --- Optimized 60FPS Tilt & Magnetic Buttons ---
         function init3DTiltAndMagnetic() {
             const tiltCards = document.querySelectorAll('.tilt-card');
             tiltCards.forEach(card => {
-                card.addEventListener('mousemove', (e) => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
-                    const rotateX = ((y - centerY) / centerY) * -6;
-                    const rotateY = ((x - centerX) / centerX) * 6;
+                let rect = null;
+                let ticking = false;
 
-                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
-                });
+                card.addEventListener('mouseenter', () => {
+                    rect = card.getBoundingClientRect();
+                }, { passive: true });
+
+                card.addEventListener('mousemove', (e) => {
+                    if (!rect || ticking) return;
+                    ticking = true;
+                    requestAnimationFrame(() => {
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        const rotateX = ((y - centerY) / centerY) * -4;
+                        const rotateY = ((x - centerX) / centerX) * 4;
+
+                        card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px)`;
+                        ticking = false;
+                    });
+                }, { passive: true });
 
                 card.addEventListener('mouseleave', () => {
-                    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+                    rect = null;
+                    card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateY(0px)';
                 });
             });
+        }
+
 
             const magneticBtns = document.querySelectorAll('.hero-cta button, .hero-cta .btn, .nav-auth button');
             magneticBtns.forEach(btn => {
