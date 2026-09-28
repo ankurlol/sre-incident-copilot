@@ -1,0 +1,25 @@
+﻿services:
+  - type: web
+    name: sre-incident-copilot
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn src.api.server:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: SIMULATE_GITHUB_ACTIONS
+        value: "false"
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GITHUB_REPO_OWNER
+        value: "ankurlol"
+      - key: GITHUB_REPO_NAME
+        value: "sample-payment-api"
+      - key: GITHUB_WORKFLOW_ID
+        value: "deploy.yml"
+      - key: AUTO_ROLLBACK_ENABLED
+        value: "true"
+      - key: MIN_CONFIDENCE_THRESHOLD
+        value: "0.75"
+      - key: BLOCK_ON_DB_MIGRATION
+        value: "true"
